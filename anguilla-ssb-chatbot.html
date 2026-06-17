@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASSB Virtual Assistant</title>
+<style>
+:root {
+  --navy:   #003366;
+  --blue:   #0066CC;
+  --sky:    #E8F2FF;
+  --gold:   #CC9900;
+  --white:  #FFFFFF;
+  --sand:   #F7F9FC;
+  --text:   #1A1A2E;
+  --muted:  #6B7280;
+  --border: #D1D9E6;
+  --green:  #065F46;
+  --red:    #991B1B;
+  --font-d: Georgia,"Times New Roman",serif;
+  --font-b: "Segoe UI",system-ui,sans-serif;
+  --r: 14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-b);background:var(--sand);color:var(--text);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(150deg,#001F44 0%,#003366 60%,#004080 100%);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.lc{background:var(--white);border-radius:20px;padding:38px 32px;width:100%;max-width:400px;box-shadow:0 32px 80px rgba(0,0,0,.45)}
+.lc-logo{text-align:center;margin-bottom:22px}
+.lc-logo img{height:52px;margin-bottom:10px}
+.lc-logo h1{font-family:var(--font-d);font-size:16px;color:var(--navy);line-height:1.3;font-weight:700}
+.lc-logo p{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+.lc hr{border:none;border-top:1px solid var(--border);margin:18px 0}
+.lc label{font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;letter-spacing:.03em}
+.lc input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:var(--font-b);outline:none;transition:border-color .15s;background:var(--sky);margin-bottom:14px}
+.lc input:focus{border-color:var(--blue);background:var(--white)}
+.lc button{width:100%;background:var(--navy);color:var(--white);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:background .15s}
+.lc button:hover{background:var(--blue)}
+.lc-err{color:#CC2200;font-size:12px;text-align:center;margin-top:10px;min-height:17px}
+.lc-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:12px}
+.lc-hint strong{color:var(--navy)}
+
+/* ── APP SHELL ── */
+#app{display:none;flex-direction:column;height:100dvh}
+header{background:var(--navy);color:var(--white);padding:12px 18px;display:flex;align-items:center;gap:13px;flex-shrink:0;border-bottom:3px solid var(--gold)}
+.hdr-logo{height:38px;filter:brightness(0) invert(1);flex-shrink:0}
+.hdr-text h1{font-family:var(--font-d);font-size:14px;font-weight:700;line-height:1.2}
+.hdr-text p{font-size:10px;color:#A8C4E0;margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.online-dot{width:8px;height:8px;background:#4ADE80;border-radius:50%;animation:pulse 2s infinite}
+.online-label{font-size:11px;color:#A8C4E0}
+.hdr-btn{background:rgba(255,255,255,.12);color:var(--white);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;transition:background .15s}
+.hdr-btn:hover{background:rgba(255,255,255,.22)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── TOPICS BAR ── */
+.topics-bar{background:var(--white);border-bottom:1px solid var(--border);padding:9px 14px;display:flex;gap:7px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.topics-bar::-webkit-scrollbar{display:none}
+.chip{background:var(--sky);color:var(--blue);border:1px solid #BDD8F0;border-radius:20px;padding:5px 12px;font-size:11.5px;font-weight:600;white-space:nowrap;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s}
+.chip:hover{background:var(--blue);color:var(--white);border-color:var(--blue)}
+
+/* ── CHAT ── */
+#chat{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:5px}
+#chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+.msg{display:flex;gap:10px;max-width:86%;animation:fadeUp .22s ease-out}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.bot{align-self:flex-start}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px}
+.bot .av{background:var(--blue)}.user .av{background:var(--navy)}
+.bbl{padding:11px 15px;border-radius:var(--r);font-size:14px;line-height:1.6;max-width:100%}
+.bot .bbl{background:var(--white);border-top-left-radius:3px;box-shadow:0 1px 5px rgba(0,0,0,.09)}
+.user .bbl{background:var(--navy);color:var(--white);border-top-right-radius:3px}
+.bbl strong{color:var(--blue)}.user .bbl strong{color:#93C5FD}
+.bbl ul,.bbl ol{padding-left:18px;margin-top:6px}.bbl li{margin-bottom:4px}
+.bbl a{color:var(--blue);text-decoration:underline}.user .bbl a{color:#93C5FD}
+.bbl .emotion-banner{border-radius:8px;padding:10px 13px;margin-bottom:10px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+.bbl .congratulations{background:#ECFDF5;color:var(--green);border-left:4px solid #10B981}
+.bbl .condolences{background:#FEF2F2;color:var(--red);border-left:4px solid #EF4444}
+.bbl .supportive{background:#EFF6FF;color:#1D4ED8;border-left:4px solid #3B82F6}
+.bbl .encouraging{background:#FFFBEB;color:#92400E;border-left:4px solid var(--gold)}
+.ts{font-size:10px;color:var(--muted);margin-top:3px;text-align:right}
+.meta{display:flex;flex-direction:column}
+.typing-bbl{background:var(--white);border-radius:var(--r);border-top-left-radius:3px;padding:12px 16px;box-shadow:0 1px 5px rgba(0,0,0,.09);display:flex;gap:5px;align-items:center}
+.tdot{width:7px;height:7px;background:var(--blue);border-radius:50%;animation:bounce 1.2s infinite}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
+
+/* ── INPUT ── */
+.input-bar{background:var(--white);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+#inp{flex:1;border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;font-family:var(--font-b);font-size:14px;resize:none;min-height:44px;max-height:120px;outline:none;transition:border-color .15s;background:var(--sky);line-height:1.4}
+#inp:focus{border-color:var(--blue);background:var(--white)}
+#send{width:44px;height:44px;background:var(--navy);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;transition:background .15s,transform .1s}
+#send:hover{background:var(--blue)}#send:active{transform:scale(.93)}
+.foot{text-align:center;font-size:10px;color:var(--muted);padding:5px 14px 9px;background:var(--white);border-top:1px solid #F3F4F6;flex-shrink:0}
+.foot a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lc">
+    <div class="lc-logo">
+      <img src="https://www.ssbai.com/image/newlogo.png" alt="ASSB" onerror="this.style.display='none'"/>
+      <h1>Anguilla Social Security Board</h1>
+      <p>Virtual Assistant</p>
+    </div>
+    <hr/>
+    <label for="li-u">Username</label>
+    <input id="li-u" type="text" placeholder="Enter your username" autocomplete="username"/>
+    <label for="li-p">Password</label>
+    <input id="li-p" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+    <button id="li-btn">Sign In</button>
+    <div class="lc-err" id="li-err"></div>
+    <p class="lc-hint">Demo — Username: <strong>assb</strong> &nbsp;·&nbsp; Password: <strong>Ssbai2026!</strong></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <img class="hdr-logo" src="https://www.ssbai.com/image/newlogo.png" alt="ASSB" onerror="this.outerHTML='<span style=font-size:22px>🐬</span>'"/>
+    <div class="hdr-text">
+      <h1>Anguilla Social Security Board</h1>
+      <p>Virtual Assistant · ssbai.com</p>
+    </div>
+    <div class="hdr-right">
+      <div class="online-dot"></div>
+      <span class="online-label">Online</span>
+      <button class="hdr-btn" id="reset-btn">New Chat</button>
+      <button class="hdr-btn" id="logout-btn">Sign Out</button>
+    </div>
+  </header>
+  <div class="topics-bar" id="chips"></div>
+  <div id="chat"></div>
+  <div class="input-bar">
+    <textarea id="inp" rows="1" placeholder="Type your question here…"></textarea>
+    <button id="send" aria-label="Send">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+  <div class="foot">
+    General information only — no case-specific decisions.
+    For official matters visit <a href="https://www.ssbai.com" target="_blank">ssbai.com</a> or call 264 497 2201/2.
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   AUTH — add more users as needed
+   ============================================================ */
+const USERS = {
+  "assb":  "Ssbai2026!",
+  "admin": "Assb@2026!",
+  "marlon":"Davis2026!"
+};
+
+const loginScreen = document.getElementById('login-screen');
+const appEl       = document.getElementById('app');
+const liU         = document.getElementById('li-u');
+const liP         = document.getElementById('li-p');
+const liBtn       = document.getElementById('li-btn');
+const liErr       = document.getElementById('li-err');
+
+function tryLogin() {
+  const u = liU.value.trim().toLowerCase();
+  const p = liP.value;
+  if (USERS[u] && USERS[u] === p) {
+    loginScreen.style.display = 'none';
+    appEl.style.display = 'flex';
+    addWelcome();
+  } else {
+    liErr.textContent = 'Incorrect username or password. Please try again.';
+    liP.value = ''; liP.focus();
+  }
+}
+liBtn.addEventListener('click', tryLogin);
+liP.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+liU.addEventListener('keydown', e => { if(e.key==='Enter') liP.focus(); });
+document.getElementById('logout-btn').addEventListener('click', () => {
+  appEl.style.display='none';
+  loginScreen.style.display='flex';
+  liU.value=''; liP.value=''; liErr.textContent='';
+  document.getElementById('chat').innerHTML='';
+  liU.focus();
+});
+
+/* ============================================================
+   EMOTIONAL CONTEXT DETECTION
+   Scans the user's message and prepends an emotion banner
+   to the bot reply where appropriate.
+   ============================================================ */
+const EMOTION_RULES = [
+  { tone:'congratulations', emoji:'🎉', message:'Congratulations on this exciting milestone!',
+    triggers:['retire','retirement','turning 65','65 years','pension','old age benefit','retiring soon','about to retire'] },
+  { tone:'congratulations', emoji:'🤰',  message:'Congratulations on your pregnancy — what a wonderful time!',
+    triggers:['pregnant','pregnancy','maternity','having a baby','gave birth','expecting','baby','newborn','new baby'] },
+  { tone:'congratulations', emoji:'👶', message:'Congratulations on the arrival of your little one!',
+    triggers:['paternity','new father','fatherhood','my wife had','baby was born','child was born'] },
+  { tone:'condolences',     emoji:'🕊️', message:'We are deeply sorry for your loss. Please know we are here to help during this difficult time.',
+    triggers:['died','passed away','death','funeral','deceased','lost my','bereavement','widow','widower','husband died','wife died','parent died','spouse died','passed on'] },
+  { tone:'supportive',      emoji:'💙', message:'We understand this is a challenging time. Let's make sure you have all the support you're entitled to.',
+    triggers:['disabled','disability','cannot work','permanently','incapable','chronic illness','terminal','seriously ill','long term illness','incapacitated'] },
+  { tone:'supportive',      emoji:'🤒', message:'We're sorry to hear you're unwell. Let's get you the information you need.',
+    triggers:['sick','sickness','ill','illness','hospitalised','hospital','injured','injury','unable to work','off work','doctor'] },
+  { tone:'supportive',      emoji:'😟', message:'We're sorry to hear you're going through this. Here's what the ASSB can offer.',
+    triggers:['lost my job','made redundant','laid off','unemployed','job loss','fired','dismissed','retrenchment'] },
+  { tone:'encouraging',     emoji:'💪', message:'Good thinking — planning ahead makes a real difference.',
+    triggers:['retirement plan','plan for retirement','preparing to retire','save for retirement','voluntary contribution','top up','fill gap'] }
+];
+
+function detectEmotion(query) {
+  const lq = query.toLowerCase();
+  for (const rule of EMOTION_RULES) {
+    if (rule.triggers.some(t => lq.includes(t))) return rule;
+  }
+  return null;
+}
+
+function emotionBanner(rule) {
+  return `<div class="emotion-banner ${rule.tone}">${rule.emoji}&nbsp; ${rule.message}</div>`;
+}
+
+/* ============================================================
+   KNOWLEDGE BASE
+   ============================================================ */
+const KB = [
+  { topic:"About ASSB", keywords:["what is","about","purpose","social security","history","established","1980","webster","govern","board","minister","director","who runs","founded","legislation","act","voluntary","compulsory"],
+    answer:`<strong>About the Anguilla Social Security Board (ASSB)</strong><br>Established under the Social Security Act 1980 by Chief Minister the Honourable James Ronald Webster. Social Security is a <strong>mandatory</strong> national insurance scheme — it cannot refuse any legally employed person.<br><br><ul><li><strong>Governance:</strong> Minister of Finance (overall responsibility) → Board of Directors (supervision) → Chief Administrative Officer (day-to-day administration)</li><li><strong>Coverage:</strong> All employees, employers, and self-employed persons in Anguilla</li><li><strong>Vision:</strong> Universal social security coverage with full employment, enabled by a customer-centric and technology-driven ASSB</li><li>More: <a href="https://www.ssbai.com/about.php" target="_blank">ssbai.com/about</a></li></ul>`},
+
+  { topic:"Contribution Rates", keywords:["contribution rate","rate","percentage","how much","deduction","11%","11.5%","5.5%","5.75%","ceiling","ec$","weekly ceiling","monthly ceiling","calculate","calculation","2025","2026","new rate","current rate"],
+    answer:`<strong>Contribution Rates (Current)</strong><br><ul><li><strong>From 1 Jan 2026:</strong> Total <strong>11.5%</strong> — Employee <strong>5.75%</strong>, Employer <strong>5.75%</strong></li><li><strong>From 1 Jan 2025:</strong> Total <strong>11%</strong> — Employee <strong>5.5%</strong>, Employer <strong>5.5%</strong></li><li><strong>Weekly ceiling:</strong> EC$1,617 — no contributions on earnings above this</li><li><strong>Monthly ceiling:</strong> EC$7,000 — no contributions on earnings above this</li><li>Contributions begin at age <strong>15</strong>, cease at age <strong>65</strong></li><li>Not payable for any full week (Mon–Sat) in which Sickness or Maternity Benefit is received</li></ul>`},
+
+  { topic:"Insurable Earnings", keywords:["insurable earnings","what counts","overtime","bonus","commission","tips","allowance","insurable wage","gross earnings","net earnings","what salary","severance","gratuity","housing allowance","car allowance","in kind","non cash","foreign currency"],
+    answer:`<strong>Insurable Earnings — What Counts?</strong><br>Contributions are calculated on <strong>insurable earnings</strong>, capped at the contribution ceiling.<br><br><ul><li><strong>Generally included:</strong> basic wages, salary, overtime pay, commissions, most cash benefits</li><li><strong>Ceiling:</strong> EC$1,617/week · EC$7,000/month — no contributions above these amounts</li><li><strong>Generally excluded:</strong> earnings above the ceiling</li><li>⚠️ Whether bonuses, tips, housing/car allowances, and in-kind benefits count as insurable earnings — confirm with ASSB: <strong>264 497 2201/2</strong></li></ul>`},
+
+  { topic:"Payment Deadlines & Remittance", keywords:["when to pay","due date","deadline","remit","submit","payment date","how often","monthly payment","pay contributions","how do i pay","submit contributions","payroll template","employer template"],
+    answer:`<strong>Contribution Payment — Deadlines & Process</strong><br><ul><li>Employers remit contributions <strong>monthly</strong> — contact ASSB for the exact monthly due date</li><li>Submit via the <a href="https://secure.ssbai.com" target="_blank">online portal</a> or in person at the ASSB office</li><li>Use the <a href="https://ssbai.com/mbs/templates/Payroll_SSB_AI.xlsx" target="_blank">Employer Contributions Template</a> (Excel) to prepare submissions</li><li>Self-employed payment schedule — confirm with ASSB office</li><li>Late payment attracts a <strong>surcharge</strong> — see Penalties topic</li></ul>`},
+
+  { topic:"Penalties & Surcharges", keywords:["penalty","penalt","surcharge","fine","late","overdue","arrears","missed payment","failure to pay","non-compliance","legal action","prosecution","criminal","behind on payments","owe money","demand letter"],
+    answer:`<strong>Penalties for Late or Non-Payment</strong><br><ul><li>A <strong>surcharge</strong> is applied to all overdue contributions — contact ASSB for the current rate</li><li>Employers who deduct contributions from employees but <strong>fail to remit</strong> remain personally liable for the full amount plus surcharges</li><li>Continued non-compliance can result in <strong>legal action and criminal prosecution</strong> under the Social Security Act</li><li>Proactive contact with the ASSB Compliance team may result in payment arrangements</li><li>If you received a demand letter from ASSB — contact them immediately: <strong>264 497 2201/2</strong></li></ul>`},
+
+  { topic:"Employee Registration", keywords:["employee register","employee registration","insured person","social security number","new employee","join","enroll","first time","ss number","get a number","register myself","how do i register","what documents","id required"],
+    answer:`<strong>Employee Registration</strong><br>Registration is <strong>compulsory</strong> by law for all employees in Anguilla.<br><br><ul><li>Register at the ASSB office or online at <a href="https://secure.ssbai.com" target="_blank">secure.ssbai.com</a></li><li><strong>Required documents:</strong> valid government-issued photo ID (passport, driver's licence, or national ID) + proof of employment (offer letter or contract)</li><li>A unique <strong>Social Security number</strong> is issued — keep it safe and give it to every employer</li><li>Your employer may register you on your behalf</li><li>Contributions begin from age <strong>15</strong>, cease at age <strong>65</strong></li><li>Form: <a href="https://www.ssbai.com/registrations.php?type=employee" target="_blank">ssbai.com/registrations</a></li></ul>`},
+
+  { topic:"Employer Registration", keywords:["employer register","employer registration","business register","company register","gainfully employ","new employer","register as employer","hire staff","took on staff","register business","employer obligations","employer duty","employer responsibility","what must employer","employer compliance","deduct from salary"],
+    answer:`<strong>Employer Registration & Obligations</strong><br>Any individual, business, or company that employs persons in Anguilla <strong>must register</strong> with the ASSB before the first employee starts work.<br><br><strong>Legal obligations:</strong><ul><li>Register as employer and register each employee</li><li>Deduct <strong>5.75%</strong> from each employee's insurable earnings (from Jan 2026)</li><li>Match with your own <strong>5.75%</strong> employer contribution</li><li>Remit combined <strong>11.5%</strong> to ASSB monthly by the due date</li><li>Maintain accurate payroll records</li><li>Failure = surcharges, penalties, and potential prosecution</li></ul>Form: <a href="https://www.ssbai.com/registrations.php?type=employer" target="_blank">ssbai.com/registrations</a>`},
+
+  { topic:"Self-Employed", keywords:["self employed","self-employed","own business","freelance","contractor","sole trader","own practice","work for myself","independent","consultant","work alone","director","company director","sub-contractor"],
+    answer:`<strong>Self-Employed Registration & Contributions</strong><br>Any person working for themselves or in their own practice must register with the ASSB as self-employed.<br><br><ul><li>Self-employed persons pay <strong>both</strong> the employee and employer portions</li><li>Registration is compulsory — not registering does not exempt you from liability</li><li>Eligible for all standard benefits once qualifying thresholds are met</li><li>Company directors who receive a salary are also generally required to contribute</li><li>Registration: <a href="https://www.ssbai.com/registrations.php?type=self" target="_blank">ssbai.com/registrations</a></li><li>Contributions: <a href="https://www.ssbai.com/contributions.php?type=self" target="_blank">ssbai.com/contributions</a></li></ul>`},
+
+  { topic:"Voluntary Contributions", keywords:["voluntary","voluntary contribution","top up","top-up","gap","fill gap","missing weeks","not enough contributions","increase contributions","left work","unemployed gap","abroad gap","maintain record"],
+    answer:`<strong>Voluntary Contributions</strong><br>If you have gaps in your contribution record — due to unemployment, time abroad, or other circumstances — you may be able to make voluntary contributions to protect your benefit eligibility.<br><br><ul><li>Generally available to persons who were previously registered contributors</li><li>Helps preserve eligibility for long-term benefits (Old Age Pension, Disability)</li><li>Contact ASSB to confirm eligibility, current rates, and how far back you can apply</li><li><strong>Phone:</strong> 264 497 2201/2 · <strong>Email:</strong> <a href="mailto:info@ssbai.com">info@ssbai.com</a></li></ul>`},
+
+  { topic:"Sickness Benefit", keywords:["sick","sickness","ill","illness","medical","doctor","unable to work","bodily","mental illness","sickness benefit","injured","injury","off work","sick leave","time off","hospitalised","hospital","waiting period","sickness rate","how long sick","qualify sickness"],
+    answer:`<strong>Sickness Benefit</strong><br>Supplements wages lost when an insured person is incapable of work due to bodily or mental illness or injury.<br><br><ul><li>Must meet the minimum qualifying contribution period — confirm with ASSB</li><li>A <strong>medical certificate</strong> from a registered doctor is required</li><li>Benefit is <strong>not payable</strong> if you are working while receiving it — this is a disqualifying offence</li><li>Contributions are not deducted during a full week (Mon–Sat) covered by Sickness Benefit</li><li>File your claim promptly — delays may affect payment</li><li>If incapacity appears permanent, enquire about <strong>Disability Benefit</strong></li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=sickness" target="_blank">ssbai.com — Sickness Benefit</a>`},
+
+  { topic:"Maternity Benefit", keywords:["maternity","pregnancy","pregnant","baby","birth","mother","newborn","confinement","28 weeks","gave birth","having a baby","maternity leave","expecting","stillbirth","miscarriage","adopt","adoption","self employed pregnant"],
+    answer:`<strong>Maternity Benefit</strong><br>Payable to an insured woman who gives birth to a living child, or a stillborn child if the pregnancy exceeded 28 weeks.<br><br><ul><li>Must meet the qualifying contribution period — confirm with ASSB</li><li>Benefit is <strong>not payable</strong> if you continue working during the benefit period</li><li>Self-employed women are eligible if qualifying contributions are met</li><li>Contributions are not deducted during a full week (Mon–Sat) covered by Maternity Benefit</li><li>File the claim with a maternity certificate from a registered medical practitioner</li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=maternity" target="_blank">ssbai.com — Maternity Benefit</a>`},
+
+  { topic:"Paternity Benefit", keywords:["paternity","father","dad","paternity leave","birth of child","2 weeks","two weeks","male contributor","new father","fatherhood","unmarried father","paternity documents"],
+    answer:`<strong>Paternity Benefit</strong><br>Payable to an insured male contributor upon the birth of his child.<br><br><ul><li>Payable for <strong>2 consecutive weeks</strong> beginning with the date of birth (confinement)</li><li>Must end within a specified period after birth — confirm exact outer deadline with ASSB</li><li>Qualifying contribution requirements apply</li><li>Contact ASSB regarding requirements for unmarried fathers</li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=paternity" target="_blank">ssbai.com — Paternity Benefit</a>`},
+
+  { topic:"Funeral Grant", keywords:["funeral","funeral grant","burial","cremation","death grant","death benefit","passed away","bereavement","how much funeral","funeral documents","claim funeral","death of spouse","death of child","who claims funeral"],
+    answer:`<strong>Funeral Grant</strong><br>A lump sum payment to help cover funeral expenses, payable upon the death of an insured person, their spouse, or their dependent children.<br><br><ul><li>The insured person must have met qualifying contribution requirements at time of death</li><li>Required: <strong>death certificate</strong> + proof of relationship to the insured</li><li>File promptly — contact ASSB for the filing deadline</li><li>The Funeral Grant is separate from the Survivors' Benefit — both may be payable</li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=funeral" target="_blank">ssbai.com — Funeral Grant</a>`},
+
+  { topic:"Disability Benefit", keywords:["disability","disabled","invalid","invalidity","permanent","incapable","incapacitated","medically certified","cannot work","long term illness","chronic","permanently unfit","disability pension","disability benefit","work injury","workplace accident","injury at work","medical review","review disability"],
+    answer:`<strong>Disability Benefit / Pension</strong><br>Payable to an insured person medically certified to be likely to remain <strong>permanently incapable of work</strong>.<br><br><ul><li>Must be under age 65 at time of claim</li><li>Medical certification from a registered physician confirming permanent incapacity required</li><li>Qualifying contribution thresholds apply — contact ASSB for current requirements</li><li>Benefit paid <strong>monthly</strong> based on contribution history</li><li>Periodic medical review may be required</li><li>At age 65, Disability Benefit typically converts to Old Age Benefit</li><li>Always notify ASSB <strong>before</strong> returning to any work</li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=disability" target="_blank">ssbai.com — Disability Benefit</a>`},
+
+  { topic:"Survivors' Benefit", keywords:["survivor","survivors","widow","widower","dependent","orphan","family member","deceased insured","unmarried child","husband died","wife died","spouse died","parent died","survivors benefit","survivor pension","remarry","remarriage","cohabiting","common law","documents survivors","separated spouse"],
+    answer:`<strong>Survivors' Benefit</strong><br>Payable to the widow or widower and unmarried dependent children of a deceased insured person.<br><br><ul><li>The deceased must have met minimum contribution requirements</li><li>Pension paid <strong>monthly</strong>; a Funeral Grant may also be separately payable</li><li>Required: death certificate, marriage certificate (if applicable), birth certificates for dependent children</li><li>File promptly — contact ASSB for the filing deadline</li><li>Contact ASSB regarding cohabiting/common-law partners and separated (not divorced) spouses</li><li>Contact ASSB regarding how remarriage may affect entitlement</li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=survivors" target="_blank">ssbai.com — Survivors' Benefit</a>`},
+
+  { topic:"Old Age / Retirement Pension", keywords:["old age","retirement","pension","retire","age 65","retire at 65","retirement age","paid until death","retirement pension","when can i retire","retirement benefit","old age pension","how much pension","pension amount","apply pension","early retirement","pension abroad","inflation pension","creditor pension","pension garnished","pension formula"],
+    answer:`<strong>Old Age Benefit (Retirement Pension)</strong><br>Payable from age <strong>65</strong>, paid until death regardless of whether you continue working.<br><br><ul><li>Normal retirement age: <strong>65 years</strong></li><li>Must meet minimum qualifying contribution requirements — contact ASSB</li><li>Benefit based on average insurable earnings and contribution history</li><li>Apply at least <strong>3 months before</strong> your 65th birthday</li><li>You <strong>can</strong> continue working after 65 and still receive your pension</li><li>Contributions <strong>cease</strong> at age 65 even if you keep working</li><li>For questions on pension payable abroad or inflation adjustments — contact ASSB: <strong>264 497 2201/2</strong></li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=oldage" target="_blank">ssbai.com — Old Age Benefit</a>`},
+
+  { topic:"NCOAP", keywords:["ncoap","non-contributory","belonger","68 years","means test","anguillian","non contributory","old age pension non","68 year","elderly","no contributions","never paid","never worked","ncoap amount","belonger status","means test threshold"],
+    answer:`<strong>NCOAP — Non-Contributory Old Age Pension</strong><br>Paid to Anguillian Belongers aged <strong>68+</strong> who meet qualifying conditions including a <strong>Means Test</strong>.<br><br><ul><li>For Anguillians without sufficient contributory history for the standard Old Age Benefit</li><li>Must be an Anguillian Belonger aged 68 or over</li><li>A Means Test assesses financial circumstances to confirm need</li><li>Apply at the ASSB office with: proof of age, Belonger status documentation, and financial documentation</li><li>Contact ASSB for current payment amount and Means Test thresholds: <strong>264 497 2201/2</strong></li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=ncoap" target="_blank">ssbai.com — NCOAP</a>`},
+
+  { topic:"Unemployment Assistance", keywords:["unemployment","irma","hurricane","job loss","unemployed","lost my job","laid off","redundant","made redundant","no work","unemployment benefit","retrenchment","fired","dismissed","resigned","can i claim unemployment"],
+    answer:`<strong>Unemployment Assistance</strong><br>Originally introduced following Hurricane Irma to provide temporary income support to insured persons who lost employment through no fault of their own.<br><br><ul><li>⚠️ Contact ASSB to confirm whether this programme is <strong>currently active</strong> and accepting claims</li><li>Generally intended for involuntary job loss — voluntary resignation may disqualify</li><li>Qualifying contribution requirements apply</li><li><strong>Phone:</strong> 264 497 2201/2 · <strong>Email:</strong> <a href="mailto:info@ssbai.com">info@ssbai.com</a></li></ul>Details: <a href="https://www.ssbai.com/benefits.php?type=unemploymentass" target="_blank">ssbai.com — Unemployment Assistance</a>`},
+
+  { topic:"How to Claim a Benefit", keywords:["how to claim","make a claim","apply for benefit","claim benefit","claim form","submit claim","benefit application","how do i apply","application process","what do i need to claim","steps to claim","where to submit","incomplete claim","claim error","fraudulent claim","claim representative","claim on behalf"],
+    answer:`<strong>How to Claim a Benefit — General Process</strong><br><ol style="padding-left:16px;margin-top:5px"><li>Download the claim form from <a href="https://www.ssbai.com/resources.php?type=forms" target="_blank">ssbai.com/forms</a> or collect at the ASSB office</li><li>Complete the form fully and gather required supporting documents</li><li>Submit at the ASSB office or via the <a href="https://secure.ssbai.com" target="_blank">online portal</a></li><li>Contact ASSB if you have not received a decision within a reasonable time</li></ol><br><ul><li>Incomplete submissions cause delays — include all required documents</li><li>File claims <strong>promptly</strong> — delays can affect payment dates</li><li>Fraudulent claims are a criminal offence under the Social Security Act</li><li>Contact ASSB to enquire about submitting on behalf of another person</li></ul>`},
+
+  { topic:"Claim Processing & Status", keywords:["how long","processing","how long does it take","waiting","wait","when will i get","payment time","how soon","claim status","check my claim","claim approved","decision","not heard","no response","payment method","bank transfer","cheque","paid abroad"],
+    answer:`<strong>Claim Processing & Payment</strong><br><ul><li>Processing times vary by benefit type and completeness of documentation</li><li>Include <strong>all</strong> required documents to avoid delays</li><li>Check claim status via the <a href="https://secure.ssbai.com" target="_blank">online portal</a> or contact ASSB directly</li><li><strong>Phone:</strong> 264 497 2201/2 · <strong>Email:</strong> <a href="mailto:info@ssbai.com">info@ssbai.com</a></li><li>Contact ASSB to confirm available payment methods (bank transfer, cheque, etc.)</li></ul>`},
+
+  { topic:"Benefit Amounts & Calculations", keywords:["how much will i get","benefit amount","how much is","payment amount","how much do i receive","weekly rate","benefit rate","what is the benefit","benefit value","pension amount","how much pension","rate of benefit","calculated","formula"],
+    answer:`<strong>Benefit Amounts — How They Are Calculated</strong><br>Benefit amounts are individually calculated based on your <strong>average insurable earnings</strong> and <strong>contribution history</strong> — there is no single fixed amount.<br><br><ul><li>The longer and more consistently you contribute, the higher your entitlement</li><li>Short-term benefits (sickness, maternity, paternity) = percentage of average insurable earnings</li><li>Long-term benefits (old age, disability) = formula applied to your full contribution record</li><li>For a personalised estimate: <strong>264 497 2201/2</strong> or visit the ASSB office</li></ul>`},
+
+  { topic:"Receiving Benefits While Working", keywords:["can i work and receive","work while receiving","still work","working and getting pension","work after retirement","pension and work","benefits while employed","can i keep working","return to work","work while on benefit","working on sick","working on maternity"],
+    answer:`<strong>Can I Work While Receiving a Benefit?</strong><br><ul><li><strong>Old Age Pension:</strong> ✅ YES — you can work and receive your pension after age 65</li><li><strong>Sickness Benefit:</strong> ❌ NO — receiving Sickness Benefit while working is disqualifying and may require repayment</li><li><strong>Maternity Benefit:</strong> ❌ NO — cannot receive Maternity Benefit while working</li><li><strong>Disability Benefit:</strong> ⚠️ Notify ASSB <strong>before</strong> returning to any work — your benefit may be affected</li><li>Always notify ASSB immediately if your circumstances change while receiving any benefit</li></ul>`},
+
+  { topic:"Contribution Statement & Record", keywords:["statement","contribution statement","my record","check my contributions","contribution history","how many contributions","how many weeks","number of contributions","verify contributions","proof of contributions","contribution record","my contributions","see my statement","certified statement","legal proceedings","immigration","contribution error","wrong record"],
+    answer:`<strong>Contribution Statement & Record</strong><br><ul><li>View your contribution history via the <a href="https://secure.ssbai.com" target="_blank">ASSB online portal</a></li><li>Or visit the ASSB office / call <strong>264 497 2201/2</strong> to request a printed statement</li><li>Contact ASSB if you need a <strong>certified statement</strong> for legal, immigration, or financial purposes</li><li>If contributions are missing from your record — gather your payslips and contact ASSB immediately. Your employer is liable for contributions they deducted but failed to remit</li><li>Errors in your record can be investigated and corrected by ASSB with supporting evidence</li></ul>`},
+
+  { topic:"Missing or Incorrect Contributions", keywords:["missing contribution","wrong contribution","employer didn't pay","contributions not paid","employer not paying","not credited","contribution error","incorrect record","employer hasn't remitted","dispute contributions","contributions missing","not showing","employer closed","bankrupt employer"],
+    answer:`<strong>Missing or Incorrect Contributions</strong><br><ul><li>Gather evidence: payslips, employment contract, bank statements</li><li>Contact ASSB — they can investigate whether your employer remitted contributions</li><li>Employers remain <strong>personally liable</strong> for contributions deducted from wages but not remitted</li><li>If your employer has closed or gone out of business, ASSB may still be able to pursue the outstanding amount</li><li><strong>Phone:</strong> 264 497 2201/2 · <strong>Email:</strong> <a href="mailto:info@ssbai.com">info@ssbai.com</a></li></ul>`},
+
+  { topic:"Changing Jobs & Gaps in Employment", keywords:["change job","new job","switch employer","left job","resigned","quit","terminate employment","redundancy","change of employer","new employer","moving jobs","leave my job","job change","gap employment","between jobs","unemployed period"],
+    answer:`<strong>Changing Jobs or Employment Gaps</strong><br><ul><li>Your Social Security number and contribution record stay with you — they don't belong to your employer</li><li>Give your SS number to your new employer on day one</li><li>Your new employer must register you and begin contributions from the first pay period</li><li>If there is a gap between jobs, consider <strong>voluntary contributions</strong> to protect your record</li><li>Verify your record via the <a href="https://secure.ssbai.com" target="_blank">online portal</a> after every job change</li></ul>`},
+
+  { topic:"Lost Card / Update Personal Details", keywords:["lost card","lost number","forgot number","replace card","new card","ss card","social security card","don't know my number","replacement card","change name","update details","change address","married name","name change","update my record","correct details","moved house"],
+    answer:`<strong>Lost Card or Need to Update Details</strong><br><ul><li><strong>Lost card/number:</strong> Visit the ASSB office with valid photo ID — your number can be retrieved and a replacement card issued. Also available via the <a href="https://secure.ssbai.com" target="_blank">online portal</a></li><li><strong>Name change</strong> (e.g. marriage): Bring marriage certificate or deed poll</li><li><strong>Address change:</strong> Bring proof of new address</li><li>Keeping details current ensures benefits are paid correctly and correspondence reaches you</li><li><strong>Phone:</strong> 264 497 2201/2 · <strong>Office:</strong> James Ronald Webster Building, The Valley</li></ul>`},
+
+  { topic:"Special Employment Situations", keywords:["part time","part-time","casual worker","seasonal","temporary worker","domestic worker","housekeeper","nanny","gardener","foreign worker","non-national","work permit","expat","two jobs","multiple employers","family business","agency worker","remote worker","student worker","minor","age 15","probation"],
+    answer:`<strong>Special Employment Situations</strong><br><ul><li><strong>Part-time/casual/seasonal:</strong> Covered — contributions calculated on actual earnings regardless of hours</li><li><strong>Domestic workers</strong> (housekeepers, nannies, gardeners): Covered — household employers must register and contribute at standard rates</li><li><strong>Students aged 15+:</strong> Contributions due for any employment, regardless of student status</li><li><strong>Probation period:</strong> Contributions due from day one of employment</li><li><strong>Multiple employers:</strong> Each employer contributes on wages they pay; combined total capped at the contribution ceiling</li><li><strong>Foreign nationals on work permits:</strong> Generally required to register and contribute — contact ASSB for any exemptions</li><li><strong>Family business employees:</strong> Family members who receive wages must be registered and contributed for</li></ul>`},
+
+  { topic:"Working Abroad & Returning to Anguilla", keywords:["working abroad","overseas","expat","left anguilla","moved abroad","outside anguilla","foreign country","emigrated","living abroad","overseas worker","left the island","moved away","return to anguilla","uk contributions","us contributions","caricom","oecs","reciprocal","totalization","foreign contributions","refund contributions","permanently leave"],
+    answer:`<strong>Working Abroad / Leaving or Returning to Anguilla</strong><br><ul><li>Contributions cease when you leave Anguilla to work abroad — but your contribution record is <strong>preserved</strong></li><li>Consider <strong>voluntary contributions</strong> while abroad to maintain benefit eligibility</li><li>When you return and resume employment in Anguilla, contributions restart automatically</li><li>Contribution refunds upon permanent emigration — contact ASSB to confirm whether this is available</li><li>Reciprocal Social Security agreements (UK, USA, CARICOM, OECS) — contact ASSB to confirm what applies to your situation</li><li><strong>Phone:</strong> 264 497 2201/2</li></ul>`},
+
+  { topic:"Appeals & Disputes", keywords:["appeal","dispute","disagree","not happy","complaint","review decision","rejected","denied","claim denied","claim rejected","wrong decision","appeal process","challenge","unfair","contest","overpayment","benefit suspended","benefit terminated","fraud","ombudsman","legal action assb"],
+    answer:`<strong>Appeals, Disputes & Overpayments</strong><br><ul><li><strong>Rejected claim:</strong> Contact ASSB in writing to formally request a review. Include all supporting documentation. Act promptly — a time limit for appeals applies (confirm deadline with ASSB)</li><li><strong>Overpayment:</strong> Notify ASSB immediately if you receive more than you are entitled to. Repayment arrangements are typically available. Knowingly retaining an overpayment may constitute fraud</li><li><strong>Circumstances changed:</strong> Notify ASSB immediately — changes in health, employment, or marital status can affect eligibility</li><li><strong>Further escalation</strong> beyond ASSB internal review — confirm available options with a legal adviser</li><li><strong>Phone:</strong> 264 497 2201/2 · <strong>Email:</strong> <a href="mailto:info@ssbai.com">info@ssbai.com</a></li></ul>`},
+
+  { topic:"Online Portal (MBS)", keywords:["portal","online","mbs","login","account","create account","digital","manage online","secure","online access","website login","my account","register online","e-services","self service","password reset","portal not working","bulk upload"],
+    answer:`<strong>ASSB Customer Online Portal (MBS)</strong><br><ul><li><strong>Login:</strong> <a href="https://secure.ssbai.com" target="_blank">secure.ssbai.com</a></li><li><strong>Create account:</strong> <a href="https://services.gov.ai/OPO/login-tasks/header/RegistrerenOnlineGebruikersaccount?locale=en" target="_blank">services.gov.ai — Create Account</a></li><li>Manage contributions, view statements, and handle registrations — available <strong>24/7</strong></li><li>Employers: upload bulk payroll via the <a href="https://ssbai.com/mbs/templates/Payroll_SSB_AI.xlsx" target="_blank">Employer Contributions Template</a> (Excel)</li><li><strong>Portal issues / password reset:</strong> Contact ASSB — 264 497 2201/2 · info@ssbai.com</li></ul>`},
+
+  { topic:"Forms & Resources", keywords:["form","forms","download","document","booklet","report","resources","annual report","pdf","template","where to get form","which form","what form","application form","strategic plan","actuarial review","ssdf"],
+    answer:`<strong>ASSB Forms & Resources</strong><br><ul><li><a href="https://www.ssbai.com/resources.php?type=forms" target="_blank">All Claim & Registration Forms</a></li><li><a href="https://www.ssbai.com/resources.php?type=booklets" target="_blank">Booklets</a> — plain-language guides</li><li><a href="https://www.ssbai.com/annualreports.php" target="_blank">Annual Reports</a></li><li><a href="https://ssbai.com/mbs/templates/Payroll_SSB_AI.xlsx" target="_blank">Employer Payroll Contributions Template</a> (Excel)</li><li><a href="https://www.ssbai.com/documents/ASSB-STP2019-2021.pdf" target="_blank">Strategic Transformation Plan 2019–2021</a></li><li><a href="https://www.ssbai.com/documents/Anguilla_SSF_2020 Actuarial_Review.pdf" target="_blank">12th Actuarial Review (2020)</a></li></ul>`},
+
+  { topic:"Contact & Office", keywords:["contact","office","address","phone","email","hours","location","where","visit","opening","call","info@","telephone","find the office","office location","open hours","whatsapp","social media","facebook","twitter","youtube","feedback","media inquiry","journalist"],
+    answer:`<strong>ASSB Contact Information</strong><br><ul><li><strong>Address:</strong> James Ronald Webster Building, P.O. Box 243, The Valley, AI-2640, Anguilla BWI</li><li><strong>Phone:</strong> 264 497 2201/2 · DIGI: 264 462 2201 · USA: 718 734 4562</li><li><strong>Email:</strong> <a href="mailto:info@ssbai.com">info@ssbai.com</a></li><li><strong>Website:</strong> <a href="https://www.ssbai.com" target="_blank">www.ssbai.com</a></li><li><strong>Hours:</strong> Monday–Friday, 8:00 AM – 4:00 PM (closed public holidays)</li><li><strong>Facebook:</strong> <a href="https://www.facebook.com/ssbai1980" target="_blank">facebook.com/ssbai1980</a></li><li><strong>Twitter/X:</strong> <a href="https://twitter.com/ssb_ai" target="_blank">@ssb_ai</a></li><li><strong>YouTube:</strong> Search "Anguilla Social Security Board"</li></ul>`},
+
+  { topic:"Retirement Planning", keywords:["retirement plan","plan for retirement","when should i apply","prepare for retirement","how to retire","retirement advice","planning retirement","retiring soon","near retirement","years to retirement","save for retirement","private pension","top up pension","pension gap"],
+    answer:`<strong>Planning for Retirement</strong><br><ul><li>Normal retirement age: <strong>65 years</strong></li><li>Apply for Old Age Benefit at least <strong>3 months before</strong> your 65th birthday</li><li>Review your contribution statement well in advance — check for gaps that can be addressed with voluntary contributions</li><li>The ASSB Old Age Benefit is your government foundation — consider additional private savings for greater retirement security</li><li>Contact ASSB for a personalised projection of your expected benefit: <strong>264 497 2201/2</strong></li></ul>`},
+
+  { topic:"Sensitive & Edge Cases", keywords:["never registered","never paid","employer told me not to","divorce","terminal illness","fraud","my number stolen","beneficiary","cannot work never worked","no formal work","debt","garnish","legal protection","pregnant abroad","maternity abroad","owe assb","letter from assb","assb error"],
+    answer:`<strong>Important Situations — What You Should Know</strong><br><ul><li><strong>Never been registered despite working:</strong> Register immediately — contact ASSB about backdated obligations and whether prior unregistered periods can be regularised</li><li><strong>Employer says SS is not required:</strong> This is incorrect. Registration is compulsory by law. Contact ASSB Compliance: 264 497 2201/2</li><li><strong>Social Security number stolen/used fraudulently:</strong> Report to ASSB immediately AND to the Royal Anguilla Police Force</li><li><strong>Terminal illness:</strong> Contact ASSB to review your Disability Benefit eligibility and to ensure your family knows about Survivors' Benefit and Funeral Grant</li><li><strong>Received a letter demanding payment from ASSB:</strong> Do not ignore it — contact ASSB immediately to understand the basis and arrange resolution</li><li><strong>Divorce proceedings:</strong> Consult a legal adviser on how divorce may affect Survivors' Benefit eligibility</li></ul>`}
+];
+
+
+/* ============================================================
+   CONVERSATIONAL WRAPPERS
+   Each KB topic gets a warm opener and closer injected
+   around the factual content at render time.
+   ============================================================ */
+const TOPIC_VOICE = {
+  "About ASSB":             { open:"Great question! Here's a bit of background on the ASSB —", close:"Feel free to ask me anything else about how Social Security works here in Anguilla." },
+  "Contribution Rates":     { open:"Happy to explain the contribution rates! Here's exactly where things stand —", close:"If you're unsure how this applies to your specific pay situation, the ASSB team at 264 497 2201/2 can run through the numbers with you." },
+  "Insurable Earnings":     { open:"Good question — this one trips people up! Here's what counts as insurable earnings —", close:"When in doubt, always check with ASSB directly so nothing falls through the cracks." },
+  "Payment Deadlines & Remittance": { open:"Staying on top of deadlines keeps everything running smoothly. Here's what you need to know —", close:"Setting a calendar reminder for the monthly deadline is a great habit to get into!" },
+  "Penalties & Surcharges": { open:"It's really important to stay on top of this one. Here's the situation with penalties —", close:"If you're behind on payments, the best move is always to reach out to ASSB proactively — they can often work something out." },
+  "Employee Registration":  { open:"Welcome to the system! Getting registered is a great first step. Here's how it works —", close:"Once you're registered, hold onto that Social Security number — you'll need it throughout your entire working life." },
+  "Employer Registration":  { open:"As an employer, getting this right from day one protects both you and your team. Here's everything you need —", close:"Your staff are counting on you to do this correctly — and the ASSB team is very helpful if you have any questions along the way." },
+  "Self-Employed":          { open:"Running your own show is great — and Social Security has you covered too. Here's what self-employed folks need to know —", close:"Being self-employed means you wear every hat, including this one — but once it's set up it's quite straightforward." },
+  "Voluntary Contributions":{ open:"Smart thinking — keeping your record strong pays off in a big way down the road. Here's how voluntary contributions work —", close:"It's worth a quick call to ASSB to find out exactly where you stand: 264 497 2201/2." },
+  "Sickness Benefit":       { open:"We're sorry to hear you're not feeling well. Here's what you're entitled to —", close:"Please don't delay filing — the sooner you submit, the sooner your benefit starts. Wishing you a speedy recovery." },
+  "Maternity Benefit":      { open:"What an exciting time! Here's the support that's available to you —", close:"Make sure you file your claim on time — you've earned this support. Enjoy every moment with your little one! 🤰" },
+  "Paternity Benefit":      { open:"Congratulations, Dad! Here's what you're entitled to as a new father —", close:"Enjoy those precious first weeks! Make sure to file your claim promptly so you don't miss out. 👶" },
+  "Funeral Grant":          { open:"We are truly sorry for your loss. During this difficult time, please know the ASSB is here to help. Here is the support available —", close:"Please take care of yourself and lean on the ASSB team — they'll guide you through the process with care: 264 497 2201/2. 🕊️" },
+  "Disability Benefit":     { open:"We're sorry you're going through this. The ASSB has support in place — here's what you need to know —", close:"You don't have to navigate this alone. The ASSB team is there to help at every step: 264 497 2201/2. Take good care of yourself. 💙" },
+  "Survivors' Benefit":    { open:"We are so sorry for your loss. The ASSB wants to make sure your family is supported. Here is what's available —", close:"Please reach out to the ASSB at any time — they'll treat your situation with the care and sensitivity it deserves: 264 497 2201/2. 🕊️" },
+  "Old Age / Retirement Pension": { open:"What a milestone — retirement is something to look forward to! Here's everything about your Old Age Benefit —", close:"You've worked hard for this. Apply at least 3 months before your 65th birthday so there's no delay when the time comes. Well done! 🎉" },
+  "NCOAP":                  { open:"The ASSB has a programme specifically designed to support elderly Anguillians who need it most. Here's how it works —", close:"If you or a family member qualifies, don't hesitate to apply. The team at ASSB are very welcoming: 264 497 2201/2." },
+  "Unemployment Assistance":{ open:"Losing a job is tough, and the ASSB may have support available for you. Here's the situation —", close:"Things have a way of turning around — and in the meantime, let's make sure you get everything you're entitled to." },
+  "How to Claim a Benefit": { open:"Claiming is simpler than most people expect. Here's the step-by-step process —", close:"The golden rule: file early and include everything. The ASSB team is happy to help if you're unsure about any step." },
+  "Claim Processing & Status": { open:"Waiting for news is never fun — here's what you should expect and how to check in —", close:"If things seem to be taking longer than expected, a quick call to ASSB usually clears things up fast: 264 497 2201/2." },
+  "Benefit Amounts & Calculations": { open:"The honest answer is that benefit amounts are personal — they're calculated specifically for you. Here's how it works —", close:"For a real estimate tailored to your own record, a visit or call to the ASSB is well worth it: 264 497 2201/2." },
+  "Receiving Benefits While Working": { open:"This is one of the most common questions we get — and the rules depend on which benefit you're talking about. Here's the breakdown —", close:"When in doubt, always check with ASSB before making any changes to your work situation while on a benefit." },
+  "Contribution Statement & Record": { open:"Keeping an eye on your contribution record is one of the best things you can do for your future. Here's how —", close:"Think of your contribution record like a bank account — it's worth checking regularly to make sure everything is accurate." },
+  "Missing or Incorrect Contributions": { open:"This is frustrating — but you have rights here and the ASSB will help you chase this down. Here's what to do —", close:"Don't let this sit — gather those payslips and contact ASSB as soon as possible. Your record is important." },
+  "Changing Jobs & Gaps in Employment": { open:"Good news — your Social Security follows you, not your employer. Here's how it works when you change jobs —", close:"A quick check of your record after every job change gives you peace of mind and catches any issues early." },
+  "Lost Card / Update Personal Details": { open:"No worries — this is easily sorted! Here's how to get your details updated or your card replaced —", close:"It's quick to fix and really important that your record stays accurate, especially when it's time to claim a benefit." },
+  "Special Employment Situations": { open:"Great question — Social Security covers more situations than many people realise. Here's how it works in your case —", close:"Still not sure where you fit? The ASSB team will give you a straight answer: 264 497 2201/2." },
+  "Working Abroad & Returning to Anguilla": { open:"Whether you're heading away or just coming back, here's what you need to know about your Social Security —", close:"Your record doesn't disappear when you leave — but it's worth a call to ASSB to make sure you're protecting it properly." },
+  "Appeals & Disputes":     { open:"If you're not happy with a decision, you absolutely have the right to challenge it. Here's how —", close:"Don't give up — make sure you act within any time limits and put everything in writing. The ASSB is accountable." },
+  "Online Portal (MBS)":    { open:"The ASSB's digital portal makes life a lot easier — here's how to get set up and what you can do —", close:"Once you're logged in, you'll find it's a really convenient way to manage your Social Security without having to visit the office." },
+  "Forms & Resources":      { open:"Everything you need is available online or at the office. Here's where to find it —", close:"If you're not sure which form applies to your situation, a quick call to the ASSB will point you in the right direction." },
+  "Contact & Office":       { open:"Here are all the ways to reach the ASSB —", close:"The team is there Monday to Friday, 8 AM to 4 PM. Don't hesitate to reach out — they're there to help." },
+  "Retirement Planning":    { open:"Planning ahead is one of the smartest things you can do — and you're already thinking the right way. Here's the guidance —", close:"You've worked for this — now make sure you're set up to enjoy it fully. The ASSB team can give you a personalised projection: 264 497 2201/2. 🎉" },
+  "Sensitive & Edge Cases": { open:"This is an important situation and I want to make sure you have the right information —", close:"Whatever your situation, the ASSB team can help you find a way through: 264 497 2201/2 or info@ssbai.com." }
+};
+
+/* ============================================================
+   CHAT ENGINE
+   ============================================================ */
+const chatEl  = document.getElementById('chat');
+const inpEl   = document.getElementById('inp');
+const sendEl  = document.getElementById('send');
+const chipsEl = document.getElementById('chips');
+let loading   = false;
+
+KB.forEach(e => {
+  const c = document.createElement('button');
+  c.className = 'chip'; c.textContent = e.topic;
+  c.addEventListener('click', () => { inpEl.value = e.topic; handleSend(); });
+  chipsEl.appendChild(c);
+});
+
+function ts() { return new Date().toLocaleTimeString('en-AI',{hour:'2-digit',minute:'2-digit'}); }
+
+function addBot(html) {
+  const w = document.createElement('div');
+  w.className = 'msg bot';
+  w.innerHTML = `<div class="av">🐬</div><div class="meta"><div class="bbl">${html}</div><div class="ts">${ts()}</div></div>`;
+  chatEl.appendChild(w); chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addUser(text) {
+  const w = document.createElement('div');
+  w.className = 'msg user';
+  const e = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  w.innerHTML = `<div class="av">👤</div><div class="meta"><div class="bbl">${e}</div><div class="ts">${ts()}</div></div>`;
+  chatEl.appendChild(w); chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function showTyping() {
+  const w = document.createElement('div');
+  w.className = 'msg bot'; w.id = 'typ';
+  w.innerHTML = `<div class="av">🐬</div><div class="typing-bbl"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  chatEl.appendChild(w); chatEl.scrollTop = chatEl.scrollHeight;
+}
+function hideTyping() { const e=document.getElementById('typ'); if(e)e.remove(); }
+
+function findAnswer(q) {
+  const lq = q.toLowerCase();
+  const scored = KB.map(e => ({
+    entry:e,
+    hits:e.keywords.filter(k=>lq.includes(k.toLowerCase())).length
+  })).filter(x=>x.hits>0).sort((a,b)=>b.hits-a.hits);
+  if(!scored.length) return null;
+  const top = scored[0].hits;
+  return scored.filter(x=>x.hits>=top-1).slice(0,2).map(x=>x.entry);
+}
+
+function buildReply(entry, query) {
+  const voice = TOPIC_VOICE[entry.topic] || { open:"Here's what I found —", close:"Feel free to ask if you need anything else." };
+  const emotion = detectEmotion(query);
+  let html = '';
+  if (emotion) html += emotionBanner(emotion);
+  html += `<div style="color:var(--muted);font-size:12px;margin-bottom:7px;font-style:italic">${voice.open}</div>`;
+  html += entry.answer;
+  html += `<div style="color:var(--muted);font-size:12px;margin-top:10px;border-top:1px solid var(--border);padding-top:8px">${voice.close}</div>`;
+  return html;
+}
+
+function handleSend() {
+  const txt = inpEl.value.trim();
+  if(!txt||loading) return;
+  loading=true;
+  inpEl.value=''; inpEl.style.height='auto';
+  addUser(txt); showTyping();
+
+  setTimeout(() => {
+    hideTyping();
+    const matches = findAnswer(txt);
+    if(matches && matches.length) {
+      matches.forEach(m => addBot(buildReply(m, txt)));
+    } else {
+      addBot(`I don't have specific information on that just yet, but I don't want to leave you without an answer! Here's who can help right away:<br><br>
+<ul>
+  <li>📞 Call us: <strong>264 497 2201/2</strong> · DIGI <strong>264 462 2201</strong></li>
+  <li>🇺🇸 From the USA: <strong>718 734 4562</strong></li>
+  <li>📧 Email: <a href="mailto:info@ssbai.com">info@ssbai.com</a></li>
+  <li>🌐 Website: <a href="https://www.ssbai.com" target="_blank">www.ssbai.com</a></li>
+</ul>
+Or tap one of the topic buttons above — I cover a lot of ground! 😊`);
+    }
+    loading=false;
+  }, 700);
+}
+
+inpEl.addEventListener('input', () => { inpEl.style.height='auto'; inpEl.style.height=Math.min(inpEl.scrollHeight,120)+'px'; });
+inpEl.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend();} });
+sendEl.addEventListener('click', handleSend);
+document.getElementById('reset-btn').addEventListener('click', () => { chatEl.innerHTML=''; addWelcome(); });
+
+function addWelcome() {
+  addBot(`Hello and welcome! 👋 I'm the <strong>ASSB Virtual Assistant</strong>, here to help you navigate your Social Security questions — simply and clearly.<br><br>
+I can help you with things like:<br>
+<ul>
+  <li>🏦 <strong>Contributions</strong> — rates, ceilings, deadlines, and how to pay</li>
+  <li>📋 <strong>Registration</strong> — employees, employers, and self-employed</li>
+  <li>🏥 <strong>Benefits</strong> — sickness, maternity, paternity, old age, disability, survivors, funeral grant, NCOAP</li>
+  <li>📂 <strong>Claims</strong> — how to apply, what to bring, how to appeal</li>
+  <li>💻 <strong>Online Portal</strong> — setting up and managing your account</li>
+  <li>📞 <strong>Contact & Office</strong> — how to reach the ASSB team</li>
+</ul>
+What can I help you with today? 😊`);
+}
+
+addWelcome();
+</script>
+</body>
+</html>

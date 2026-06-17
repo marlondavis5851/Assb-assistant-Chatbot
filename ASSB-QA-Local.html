@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASSB Q&A Database — 250+ Questions</title>
+<style>
+:root{--navy:#003366;--blue:#0066CC;--gold:#CC9900;--white:#fff;--sand:#F7F9FC;--border:#D1D9E6;--text:#1A1A2E;--muted:#6B7280;--green:#065F46;--red:#991B1B}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--sand);color:var(--text)}
+header{background:var(--navy);border-bottom:4px solid var(--gold);padding:20px 28px;position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.hdr-top img{height:38px;filter:brightness(0)invert(1);flex-shrink:0}
+.hdr-top h1{font-family:Georgia,serif;font-size:17px;color:var(--white);font-weight:700}
+.hdr-top p{font-size:11px;color:#A8C4E0;margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+.search-bar{display:flex;gap:10px;align-items:center}
+#search{flex:1;border:none;border-radius:10px;padding:10px 16px;font-size:14px;background:rgba(255,255,255,.12);color:var(--white);outline:none}
+#search::placeholder{color:rgba(255,255,255,.5)}
+#search:focus{background:rgba(255,255,255,.2)}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.filter-btn{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:4px 12px;font-size:11.5px;cursor:pointer;transition:all .15s}
+.filter-btn:hover,.filter-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700}
+.stats{font-size:11px;color:rgba(255,255,255,.6);margin-top:8px}
+#count{font-weight:700;color:var(--gold)}
+
+.main{max-width:900px;margin:0 auto;padding:24px 20px}
+
+.section-header{background:var(--navy);color:var(--white);padding:10px 18px;border-radius:10px;margin:24px 0 12px;font-size:13px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+.section-header span{opacity:.7;font-weight:400}
+
+.qa-card{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:box-shadow .15s}
+.qa-card:hover{box-shadow:0 2px 12px rgba(0,102,204,.1)}
+.qa-card.hidden{display:none}
+.qa-card.flagged .qa-q{border-left:4px solid #F59E0B}
+.qa-card.approved .qa-q{border-left:4px solid #10B981}
+
+.qa-q{padding:14px 16px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;background:var(--sand)}
+.qa-q:hover{background:#EFF6FF}
+.qa-num{background:var(--navy);color:var(--white);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.qa-q-text{font-size:13.5px;font-weight:600;flex:1;line-height:1.4;color:var(--text)}
+.qa-toggle{color:var(--muted);font-size:16px;flex-shrink:0;transition:transform .2s}
+.qa-card.open .qa-toggle{transform:rotate(180deg)}
+.warn-badge{background:#FEF3C7;color:#92400E;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:8px;flex-shrink:0}
+.ok-badge{background:#ECFDF5;color:#065F46;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:8px;flex-shrink:0}
+
+.qa-a{display:none;padding:14px 16px;border-top:1px solid var(--border);font-size:13.5px;line-height:1.7;color:#374151}
+.qa-card.open .qa-a{display:block}
+.qa-a strong{color:var(--navy)}
+
+.qa-actions{display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.qa-actions label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.action-btn{border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-approve{background:#ECFDF5;color:var(--green)}
+.btn-approve:hover{background:#D1FAE5}
+.btn-flag{background:#FEF3C7;color:#92400E}
+.btn-flag:hover{background:#FDE68A}
+.btn-edit{background:#EFF6FF;color:#1D4ED8}
+.btn-edit:hover{background:#DBEAFE}
+.note-input{flex:1;min-width:180px;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;outline:none;color:var(--text)}
+.note-input:focus{border-color:var(--blue)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.empty span{font-size:36px;display:block;margin-bottom:10px}
+
+/* Print */
+@media print{header{position:static}#search,.filter-bar,.qa-actions{display:none!important}.qa-a{display:block!important}.qa-card{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-top">
+    <img src="https://www.ssbai.com/image/newlogo.png" alt="ASSB" onerror="this.style.display='none'"/>
+    <div>
+      <h1>ASSB Q&A Database</h1>
+      <p>250+ Questions · For Team Review & Accuracy Vetting</p>
+    </div>
+  </div>
+  <div class="search-bar">
+    <input id="search" type="text" placeholder="🔍  Search questions and answers…" oninput="filterAll()"/>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All Questions</button>
+    <button class="filter-btn" onclick="setFilter('flagged',this)">⚠️ Needs Confirmation</button>
+    <button class="filter-btn" onclick="setFilter('approved',this)">✅ Approved</button>
+    <button class="filter-btn" onclick="setFilter('edited',this)">✏️ Has Notes</button>
+  </div>
+  <div class="stats">Showing <span id="count">0</span> questions &nbsp;·&nbsp; Click any question to expand &nbsp;·&nbsp; Use action buttons to review</div>
+</header>
+
+<div class="main" id="main"></div>
+
+<script>
+const SECTIONS = [
+  { title:"Section 1 — General & About the ASSB", items:[
+    {n:1,  q:"What is Social Security?", a:"Social Security is a mandatory national insurance scheme that collects contributions from workers and employers, then pays benefits when contributors face hardship such as illness, disability, old age, maternity, or death. Unlike private insurance, it cannot refuse any legally employed person.", flag:false},
+    {n:2,  q:"When was the ASSB established?", a:"The ASSB was established under the Social Security Act 1980 by Chief Minister the Honourable James Ronald Webster, to provide and manage a system of national insurance for the workers of Anguilla.", flag:false},
+    {n:3,  q:"Who governs the ASSB?", a:"The Minister of Finance holds overall responsibility. A Board of Directors provides general supervision, and a Chief Administrative Officer (Director) manages day-to-day administration with staff.", flag:false},
+    {n:4,  q:"Is participation in Social Security voluntary?", a:"No. Registration and contribution are compulsory for all legally employed persons in Anguilla, including employees, employers, and self-employed persons.", flag:false},
+    {n:5,  q:"What is the ASSB's vision?", a:"Anguilla transformed into a smart, resilient, diversified, inclusive and green economy with universal social security coverage and full employment, enabled by a customer-centric and technology-driven ASSB.", flag:false},
+    {n:6,  q:"What legislation governs Social Security in Anguilla?", a:"The Social Security Act 1980 and its subsequent amendments. Contact the ASSB office or Government of Anguilla for the current consolidated version.", flag:false},
+    {n:7,  q:"Is the ASSB the same as a pension fund?", a:"Not exactly. The ASSB provides both short-term benefits (sickness, maternity, paternity, funeral grant) and long-term benefits (old age pension, disability pension, survivors' benefit). A pension fund typically provides only retirement income.", flag:false},
+    {n:8,  q:"Where can I find more information about the ASSB?", a:"Visit www.ssbai.com, call 264 497 2201/2, email info@ssbai.com, or visit the James Ronald Webster Building in The Valley, Anguilla.", flag:false},
+  ]},
+  { title:"Section 2 — Registration", items:[
+    {n:9,  q:"Who must register with the ASSB?", a:"All employees, employers, and self-employed persons in Anguilla are required by law to register with the ASSB.", flag:false},
+    {n:10, q:"How does an employee register?", a:"Visit the ASSB office or use the online portal at secure.ssbai.com. Bring valid government-issued photo ID and proof of employment. Your employer may also register you on your behalf.", flag:false},
+    {n:11, q:"How does an employer register?", a:"Complete the employer registration form at ssbai.com/registrations or at the ASSB office. Any business that employs persons must register before the first employee starts work.", flag:false},
+    {n:12, q:"How does a self-employed person register?", a:"Complete the self-employed registration form at ssbai.com/registrations or collect it at the ASSB office. Bring valid ID and evidence of self-employment activity.", flag:false},
+    {n:13, q:"What documents are needed to register as an employee?", a:"Valid government-issued photo ID (passport, driver's licence, or national ID card) and proof of employment (employment letter or contract).", flag:false},
+    {n:14, q:"What documents are needed to register as an employer?", a:"Valid ID, business registration documents, and details of your business activities. Contact the ASSB office for the current complete list.", flag:true},
+    {n:15, q:"What documents are needed to register as self-employed?", a:"Valid government-issued photo ID and evidence of self-employment (business licence, trade licence, or similar documentation).", flag:false},
+    {n:16, q:"What is a Social Security number?", a:"A unique identification number issued by the ASSB upon registration, used for all Social Security transactions. You must give this number to every employer you work for.", flag:false},
+    {n:17, q:"How long does it take to get a Social Security number?", a:"Contact the ASSB office for current processing times. In many cases the number is issued at time of registration.", flag:true},
+    {n:18, q:"My employer registered me — do I need to do anything else?", a:"Confirm with your employer that registration was completed and ask for your Social Security number. Keep it safe — you'll need it throughout your working life and when claiming benefits.", flag:false},
+    {n:19, q:"I lost my Social Security card. How do I get a replacement?", a:"Visit the ASSB office with valid photo ID. A replacement card or written confirmation of your number can be issued. You can also check your number via the online portal.", flag:false},
+    {n:20, q:"Can I register online?", a:"Yes. Visit the ASSB online portal at secure.ssbai.com or create an account via services.gov.ai to manage your registration digitally.", flag:false},
+    {n:21, q:"I am a new business owner. When must I register?", a:"Before your first employee begins working. Failure to register on time does not exempt you from liability for contributions owed from the date employment commenced.", flag:false},
+    {n:22, q:"Do I need to register for short-term or occasional employees?", a:"Yes. Any employment arrangement that falls within the definition of employment under the Social Security Act requires registration and contributions.", flag:true},
+    {n:23, q:"My details have changed. What do I do?", a:"Report changes to the ASSB promptly. Bring supporting documents (marriage certificate for name changes, proof of address for address updates). Updates can also be made via the online portal.", flag:false},
+    {n:24, q:"Can a minor (under 18) be registered?", a:"Yes. Contributions are payable from age 15. Any person aged 15 or older who is employed must be registered.", flag:false},
+  ]},
+  { title:"Section 3 — Contribution Rates & Calculation", items:[
+    {n:25, q:"What is the current contribution rate?", a:"Effective 1 January 2026: total rate is 11.5% of insurable earnings — 5.75% deducted from the employee, 5.75% paid by the employer.", flag:false},
+    {n:26, q:"What was the rate before 2026?", a:"Effective 1 January 2025 the rate was 11% total — 5.5% employee and 5.5% employer.", flag:false},
+    {n:27, q:"What is the contribution ceiling?", a:"EC$1,617 per week for weekly-paid workers and EC$7,000 per month for monthly-paid workers. No contributions are payable on earnings above these ceilings.", flag:false},
+    {n:28, q:"Is there a minimum earnings threshold below which no contributions are due?", a:"Contact the ASSB office to confirm the current minimum earnings floor, if any.", flag:true},
+    {n:29, q:"How are contributions calculated for a weekly worker?", a:"Multiply insurable weekly earnings (up to EC$1,617) by 11.5%. Employee pays 5.75%, employer pays 5.75%.", flag:false},
+    {n:30, q:"How are contributions calculated for a monthly worker?", a:"Multiply insurable monthly earnings (up to EC$7,000) by 11.5%. Employee pays 5.75%, employer pays 5.75%.", flag:false},
+    {n:31, q:"What counts as insurable earnings?", a:"Generally includes basic wages, overtime pay, salary, and commissions. Confirm with ASSB whether bonuses, tips, and allowances are included.", flag:true},
+    {n:32, q:"Are non-cash benefits (company car, housing) included in insurable earnings?", a:"This depends on the specific benefit and current ASSB regulations. Contact the ASSB office for clarification.", flag:true},
+    {n:33, q:"Does overtime count toward insurable earnings?", a:"Generally yes — overtime pay is typically included in insurable earnings up to the contribution ceiling. Confirm with ASSB.", flag:true},
+    {n:34, q:"Do bonuses count toward insurable earnings?", a:"Confirm with ASSB office whether bonuses are included and how they are treated in the contribution calculation period.", flag:true},
+    {n:35, q:"What is the self-employed contribution rate?", a:"Self-employed persons pay both the employee and employer portions. Confirm the exact 2026 rate (expected to be 11.5% total) with the ASSB office.", flag:true},
+    {n:36, q:"Can contributions ever exceed the ceiling?", a:"No. Contributions are not payable on earnings above EC$1,617/week or EC$7,000/month, regardless of how high earnings are.", flag:false},
+    {n:37, q:"Are contributions payable during public holidays?", a:"Contributions are based on earnings paid. If wages are paid for public holidays, those earnings form part of insurable earnings for that period.", flag:false},
+    {n:38, q:"Are contributions payable when an employee is on paid annual leave?", a:"Yes. Earnings paid during annual leave are insurable earnings and contributions must be deducted and remitted.", flag:false},
+    {n:39, q:"Are contributions payable when an employee is on unpaid leave?", a:"If no wages are paid, there are no insurable earnings and therefore no contribution is due for that period.", flag:false},
+    {n:40, q:"Are contributions payable during a probation period?", a:"Yes. Employment status — not probation status — determines liability. Contributions are due from the first day of employment.", flag:false},
+    {n:41, q:"I am paid in a foreign currency. How are contributions calculated?", a:"Convert earnings to Eastern Caribbean Dollars (EC$) at the prevailing exchange rate and apply the contribution rate. Confirm ASSB's accepted exchange rate source with the office.", flag:true},
+    {n:42, q:"My salary is paid partly in cash and partly in kind. What do I contribute on?", a:"Contributions are generally calculated on the cash portion of wages. Confirm treatment of in-kind remuneration with ASSB.", flag:true},
+  ]},
+  { title:"Section 4 — Payment & Compliance", items:[
+    {n:43, q:"When must employers remit contributions?", a:"Monthly, by the due date specified by the ASSB. Confirm the exact monthly deadline with the ASSB.", flag:true},
+    {n:44, q:"How do employers submit and pay contributions?", a:"Via the ASSB online portal at secure.ssbai.com, or in person at the ASSB office. Use the Employer Contributions Template (Excel) available at ssbai.com.", flag:false},
+    {n:45, q:"What records must employers keep?", a:"Accurate payroll records including employee names, SS numbers, insurable earnings, and contributions deducted and remitted for each pay period. Confirm mandatory retention period with ASSB.", flag:true},
+    {n:46, q:"What happens if an employer fails to pay contributions on time?", a:"A surcharge is applied to overdue contributions. Continued non-compliance can result in legal action and prosecution under the Social Security Act.", flag:true},
+    {n:47, q:"My employer deducted my contributions but didn't remit them to ASSB. What happens?", a:"The employer remains fully liable for the unremitted amount plus surcharges. This is a serious offence. The ASSB has powers to pursue and prosecute employers.", flag:false},
+    {n:48, q:"Can an employer face criminal prosecution for non-compliance?", a:"Yes. The Social Security Act provides for prosecution of employers who fail to register, deduct, or remit contributions.", flag:true},
+    {n:49, q:"I am a small business behind on contributions. What should I do?", a:"Contact the ASSB Compliance team as soon as possible. Payment arrangements may be available for employers who approach ASSB proactively.", flag:false},
+    {n:50, q:"Can I pay contributions in advance?", a:"Contact the ASSB office to confirm whether advance payments are accepted and how they are recorded.", flag:true},
+    {n:51, q:"What is the Employer Contributions Template?", a:"An Excel spreadsheet available for download at ssbai.com/mbs/templates/Payroll_SSB_AI.xlsx that helps employers prepare and submit monthly contribution schedules in the correct format.", flag:false},
+    {n:52, q:"Are employer Social Security contributions tax-deductible?", a:"This is a tax matter. Consult the Anguilla Inland Revenue or a qualified accountant. The ASSB does not provide tax advice.", flag:false},
+    {n:53, q:"Are employee Social Security deductions tax-deductible?", a:"Consult the Anguilla Inland Revenue or a qualified tax adviser for guidance on personal tax treatment of SS deductions.", flag:false},
+    {n:54, q:"What is the contribution week?", a:"The contribution week runs from Monday to Saturday. A contribution is due for any week in which an employee earns wages, subject to the ceiling.", flag:false},
+  ]},
+  { title:"Section 5 — Sickness Benefit", items:[
+    {n:55, q:"What is Sickness Benefit?", a:"A short-term benefit that supplements wages lost by an insured person who is incapable of work due to bodily or mental illness or injury.", flag:false},
+    {n:56, q:"Who qualifies for Sickness Benefit?", a:"Insured persons who meet the minimum qualifying contribution period and are incapable of work due to illness. Confirm the exact qualifying period with ASSB.", flag:true},
+    {n:57, q:"How much is Sickness Benefit?", a:"The benefit is a percentage of average insurable earnings. Confirm the exact rate and calculation method with ASSB.", flag:true},
+    {n:58, q:"How long can I receive Sickness Benefit?", a:"Confirm the maximum duration (e.g. up to 26 weeks per episode) with ASSB.", flag:true},
+    {n:59, q:"What do I need to claim Sickness Benefit?", a:"A completed claim form and a medical certificate from a registered doctor confirming incapacity for work. Submit to the ASSB office as soon as possible.", flag:false},
+    {n:60, q:"Is there a waiting period before Sickness Benefit starts?", a:"Confirm whether there is a waiting period (e.g. 3-day or 7-day qualifying period) before benefit payments begin.", flag:true},
+    {n:61, q:"Can I receive Sickness Benefit and keep working?", a:"No. No person should receive Sickness Benefit while working. Doing so can result in disqualification, repayment, and potential penalties.", flag:false},
+    {n:62, q:"My illness has lasted longer than the maximum period. What happens?", a:"If you remain incapable after exhausting Sickness Benefit, you may be assessed for Disability Benefit if your incapacity is likely to be permanent. Contact ASSB.", flag:false},
+    {n:63, q:"What if my employer continues to pay me while I am sick?", a:"Confirm with ASSB how continued employer payments interact with Sickness Benefit entitlement.", flag:true},
+    {n:64, q:"Are contributions paid during sickness?", a:"No. Contributions are not deducted for any full week (Monday to Saturday) in which the employee receives Sickness Benefit.", flag:false},
+  ]},
+  { title:"Section 6 — Maternity Benefit", items:[
+    {n:65, q:"What is Maternity Benefit?", a:"A short-term benefit payable to an insured woman who gives birth to a living child, or a stillborn child where the pregnancy was over 28 weeks.", flag:false},
+    {n:66, q:"Who qualifies for Maternity Benefit?", a:"Insured women who meet the minimum qualifying contribution period. Confirm the exact qualifying period with ASSB.", flag:true},
+    {n:67, q:"How much is Maternity Benefit?", a:"Confirm the exact rate (percentage of average insurable earnings) and calculation method with ASSB.", flag:true},
+    {n:68, q:"How long is Maternity Benefit paid?", a:"Confirm the total duration and whether it is split before and after birth with ASSB.", flag:true},
+    {n:69, q:"Can I receive Maternity Benefit and keep working?", a:"No. No person should receive Maternity Benefit while working. This will result in disqualification.", flag:false},
+    {n:70, q:"What if I have a miscarriage or stillbirth?", a:"Maternity Benefit may be payable for a stillbirth if the pregnancy exceeded 28 weeks. Confirm treatment of miscarriages and stillbirths under 28 weeks with ASSB.", flag:true},
+    {n:71, q:"I am self-employed and pregnant. Am I entitled to Maternity Benefit?", a:"Yes, if you have met the qualifying contribution requirements as a self-employed contributor. Contact ASSB to confirm eligibility.", flag:false},
+    {n:72, q:"Are contributions paid during maternity leave?", a:"No. Contributions are not deducted for any full week (Monday to Saturday) in which the employee receives Maternity Benefit.", flag:false},
+    {n:73, q:"What documents do I need to claim Maternity Benefit?", a:"A completed Maternity Benefit claim form and a maternity certificate from a registered medical practitioner. Confirm if additional documents are required with ASSB.", flag:true},
+  ]},
+  { title:"Section 7 — Paternity Benefit", items:[
+    {n:74, q:"What is Paternity Benefit?", a:"A short-term benefit payable to an insured male contributor upon the birth of his child.", flag:false},
+    {n:75, q:"How long is Paternity Benefit?", a:"Two consecutive weeks beginning with the date of confinement (birth).", flag:false},
+    {n:76, q:"Is there a deadline by which Paternity Benefit must end?", a:"Yes — the benefit must end not later than a specified period after birth. Confirm the exact outer deadline with ASSB.", flag:true},
+    {n:77, q:"Who qualifies for Paternity Benefit?", a:"An insured male contributor who meets the qualifying contribution period. Confirm the exact qualifying period with ASSB.", flag:true},
+    {n:78, q:"Do I need to be married to claim Paternity Benefit?", a:"Confirm with ASSB whether the benefit is available to unmarried fathers and what proof of paternity is required.", flag:true},
+    {n:79, q:"What documents do I need to claim Paternity Benefit?", a:"A completed claim form and documentation confirming the birth. Confirm full document list with ASSB.", flag:true},
+  ]},
+  { title:"Section 8 — Funeral Grant", items:[
+    {n:80, q:"What is the Funeral Grant?", a:"A lump sum payment to help cover funeral expenses, payable upon the death of an insured person, their spouse, or their dependent children.", flag:false},
+    {n:81, q:"How much is the Funeral Grant?", a:"Confirm the current grant amount with ASSB.", flag:true},
+    {n:82, q:"Who can claim the Funeral Grant?", a:"A person who has incurred funeral expenses for an insured person, their insured spouse, or their dependent child. Confirm the full list of eligible claimants with ASSB.", flag:true},
+    {n:83, q:"What contribution record does the deceased need?", a:"The insured person must have met minimum qualifying contribution requirements at the time of death. Confirm the exact qualifying threshold with ASSB.", flag:true},
+    {n:84, q:"What documents are required to claim the Funeral Grant?", a:"Death certificate of the deceased and proof of relationship to the insured person. Confirm the full document list with ASSB.", flag:true},
+    {n:85, q:"How quickly must I file a Funeral Grant claim?", a:"Confirm the filing deadline with ASSB.", flag:true},
+    {n:86, q:"Can the Funeral Grant and Survivors' Benefit be claimed at the same time?", a:"Yes — the Funeral Grant is a separate one-off payment; the Survivors' Benefit is an ongoing monthly pension. Both may be payable.", flag:false},
+  ]},
+  { title:"Section 9 — Disability Benefit", items:[
+    {n:87, q:"What is the Disability Benefit?", a:"A long-term monthly benefit (pension) payable to an insured person who is medically certified to be likely to remain permanently incapable of work.", flag:false},
+    {n:88, q:"Who qualifies for Disability Benefit?", a:"An insured person who is under age 65, meets the minimum qualifying contribution period, and has been medically certified as permanently incapable of work.", flag:false},
+    {n:89, q:"What is the minimum contribution requirement for Disability Benefit?", a:"Confirm the exact minimum (e.g. 150 contributions, with at least 50 in the last 5 years) with ASSB.", flag:true},
+    {n:90, q:"How is Disability Benefit calculated?", a:"Confirm the benefit formula (percentage of average insurable earnings based on contribution history) with ASSB.", flag:true},
+    {n:91, q:"What medical evidence is required for Disability Benefit?", a:"Certification by a registered medical practitioner that the person is permanently incapable of any gainful employment. Confirm if a specialist referral is required.", flag:true},
+    {n:92, q:"Can I work while receiving Disability Benefit?", a:"If you return to work, your Disability Benefit may be affected or terminated. Always notify the ASSB before returning to any employment.", flag:false},
+    {n:93, q:"Is Disability Benefit reviewed periodically?", a:"Yes — the ASSB may require periodic medical reviews to confirm ongoing eligibility. Confirm review frequency with ASSB.", flag:true},
+    {n:94, q:"What happens to my Disability Benefit when I turn 65?", a:"At age 65 the Disability Benefit typically converts to Old Age Benefit. Confirm the conversion process with ASSB.", flag:true},
+    {n:95, q:"I was injured at work. Is there a separate workers' compensation scheme?", a:"Confirm with ASSB and the Department of Labour whether a separate workers' compensation or employment injury benefit exists in Anguilla.", flag:true},
+  ]},
+  { title:"Section 10 — Survivors' Benefit", items:[
+    {n:96,  q:"What is the Survivors' Benefit?", a:"A long-term monthly pension payable to the widow or widower and dependent children of a deceased insured person who met qualifying contribution requirements.", flag:false},
+    {n:97,  q:"Who is eligible for Survivors' Benefit?", a:"The lawful spouse and unmarried dependent children of the deceased insured. Confirm whether common-law or cohabiting partners qualify under current legislation.", flag:true},
+    {n:98,  q:"What is the minimum contribution record the deceased must have?", a:"Confirm the exact qualifying threshold with ASSB.", flag:true},
+    {n:99,  q:"How much is the Survivors' Benefit?", a:"Confirm the benefit formula and rate with ASSB.", flag:true},
+    {n:100, q:"Up to what age are dependent children eligible?", a:"Confirm child eligibility age limit (typically under 16, or under 21 if in full-time education) with ASSB.", flag:true},
+    {n:101, q:"What if the surviving spouse remarries?", a:"Confirm with ASSB whether remarriage affects entitlement to Survivors' Benefit.", flag:true},
+    {n:102, q:"What documents are needed to claim Survivors' Benefit?", a:"Death certificate of the deceased, marriage certificate (for spouse), and birth certificates for dependent children. Confirm full document list with ASSB.", flag:true},
+    {n:103, q:"My spouse died without ever having registered with Social Security. Can I still claim?", a:"If the deceased was never registered and never contributed, no contributory benefit would be payable. If you are an Anguillian Belonger aged 68+, you may qualify for the NCOAP.", flag:false},
+  ]},
+  { title:"Section 11 — Old Age / Retirement Pension", items:[
+    {n:104, q:"What is the Old Age Benefit?", a:"A monthly pension payable to an insured person from age 65 until death, regardless of whether the person continues to work.", flag:false},
+    {n:105, q:"What is the minimum qualifying contribution for Old Age Benefit?", a:"Confirm the minimum number of qualifying contributions (e.g. 500 weekly contributions / approx. 10 years) with ASSB.", flag:true},
+    {n:106, q:"Is there a reduced pension for those who don't meet the full qualifying period?", a:"Confirm with ASSB whether a reduced pension is available for those with fewer than the full qualifying contributions.", flag:true},
+    {n:107, q:"Is there an early retirement option before age 65?", a:"Confirm with ASSB whether early retirement (e.g. from age 60) is available and what reduction, if any, applies.", flag:true},
+    {n:108, q:"How is the pension amount calculated?", a:"Based on average insurable earnings and contribution history. Confirm the exact pension formula with ASSB.", flag:true},
+    {n:109, q:"Can I receive my pension and continue working after 65?", a:"Yes. The Old Age Benefit is payable from age 65 regardless of employment status.", flag:false},
+    {n:110, q:"Do I still pay contributions after age 65 if I keep working?", a:"No. Contributions cease when you reach age 65.", flag:false},
+    {n:111, q:"When should I apply for my Old Age Benefit?", a:"At least 3 months before your 65th birthday to ensure timely processing.", flag:false},
+    {n:112, q:"What documents do I need to apply for Old Age Benefit?", a:"Proof of age (birth certificate or passport), national ID or passport, and Social Security number. Confirm the full document list with ASSB.", flag:true},
+    {n:113, q:"Can I receive my pension if I live abroad after retiring?", a:"Confirm with ASSB whether Old Age Benefit is payable to persons resident outside Anguilla and how payments are made internationally.", flag:true},
+    {n:114, q:"Will my pension increase over time with inflation?", a:"Confirm with ASSB whether there is a mechanism for cost-of-living increases or annual adjustments to Old Age Benefit.", flag:true},
+  ]},
+  { title:"Section 12 — NCOAP", items:[
+    {n:115, q:"What is the NCOAP?", a:"The Non-Contributory Old Age Pension (NCOAP) is paid to Anguillian Belongers aged 68 or older who have not accumulated sufficient contributory history and who pass a Means Test.", flag:false},
+    {n:116, q:"Who qualifies for the NCOAP?", a:"Anguillian Belongers aged 68 or older who meet the Means Test requirements.", flag:false},
+    {n:117, q:"What is the Means Test?", a:"An assessment of the applicant's financial circumstances to determine whether they are in financial need. Confirm the specific Means Test thresholds and criteria with ASSB.", flag:true},
+    {n:118, q:"What is the NCOAP payment amount?", a:"Confirm the current monthly NCOAP payment amount with ASSB.", flag:true},
+    {n:119, q:"What is an 'Anguillian Belonger' for NCOAP purposes?", a:"Confirm the legal definition of Belonger status applicable to the NCOAP with ASSB and relevant immigration/nationality legislation.", flag:true},
+    {n:120, q:"How do I apply for NCOAP?", a:"Apply at the ASSB office with proof of age, evidence of Belonger status, and documentation of your financial circumstances.", flag:false},
+  ]},
+  { title:"Section 13 — Unemployment Assistance", items:[
+    {n:121, q:"What is Unemployment Assistance?", a:"A programme originally introduced following Hurricane Irma that provides temporary income support to insured persons who lost employment through no fault of their own.", flag:false},
+    {n:122, q:"Is Unemployment Assistance currently active?", a:"Confirm with ASSB whether this programme is currently active and accepting claims.", flag:true},
+    {n:123, q:"Who qualifies for Unemployment Assistance?", a:"Insured persons who have lost their employment involuntarily and meet qualifying contribution requirements. Confirm current qualifying conditions with ASSB.", flag:true},
+    {n:124, q:"How much is Unemployment Assistance and how long is it paid?", a:"Confirm current payment amount and maximum duration with ASSB.", flag:true},
+    {n:125, q:"If I resigned from my job, can I claim Unemployment Assistance?", a:"Unemployment Assistance is generally for persons who lost employment through no fault of their own. Voluntary resignation may disqualify you. Confirm with ASSB.", flag:true},
+  ]},
+  { title:"Section 14 — How to Claim", items:[
+    {n:126, q:"What is the general process to claim any benefit?", a:"(1) Download or collect the claim form from ssbai.com/forms or the ASSB office. (2) Complete the form and gather required supporting documents. (3) Submit at the ASSB office or via the online portal. (4) Contact ASSB if no decision within a reasonable time.", flag:false},
+    {n:127, q:"Where can I get claim forms?", a:"Online at ssbai.com/resources.php?type=forms, or in person at the ASSB office, James Ronald Webster Building, The Valley.", flag:false},
+    {n:128, q:"Can I submit a claim on behalf of someone else?", a:"Confirm with ASSB whether a designated representative or legal guardian can submit claims on behalf of a claimant.", flag:true},
+    {n:129, q:"What happens if I submit an incomplete claim?", a:"Processing will be delayed until all required documentation is received. ASSB may contact you for the missing information.", flag:false},
+    {n:130, q:"How will I know if my claim has been approved?", a:"The ASSB will notify you of the decision. Confirm the notification method and typical decision timeline with ASSB.", flag:true},
+    {n:131, q:"My claim was approved. How will I be paid?", a:"Confirm payment methods available (bank transfer, cheque, cash collection) with ASSB.", flag:true},
+    {n:132, q:"Is there a penalty for submitting a fraudulent claim?", a:"Yes. Submitting a fraudulent claim is a criminal offence under the Social Security Act and can result in repayment, prosecution, and disqualification from future benefits.", flag:false},
+  ]},
+  { title:"Section 15 — Contribution Records & Statements", items:[
+    {n:133, q:"How do I check my contribution history?", a:"Log into the online portal at secure.ssbai.com. Or visit the ASSB office / call 264 497 2201/2 to request a printed statement.", flag:false},
+    {n:134, q:"My employer says they've been paying but contributions don't appear on my record. What do I do?", a:"Gather your payslips as evidence. Contact ASSB. They can investigate whether your employer remitted contributions on your behalf.", flag:false},
+    {n:135, q:"Can I get a certified contribution statement for legal or immigration proceedings?", a:"Confirm with ASSB whether certified or notarised contribution statements are available and any associated fee.", flag:true},
+    {n:136, q:"I contributed for years but my record shows fewer contributions than expected. Why?", a:"Possible reasons: employer failed to remit, data entry errors, contributions under a different SS number, or a period of non-insurable employment. Contact ASSB to investigate.", flag:false},
+    {n:137, q:"How do I dispute an error in my contribution record?", a:"Contact the ASSB office with supporting evidence (payslips, employment contracts, bank statements). The ASSB will investigate and correct confirmed errors.", flag:false},
+  ]},
+  { title:"Section 16 — Voluntary Contributions", items:[
+    {n:138, q:"What are voluntary contributions?", a:"Payments made voluntarily by a person who was previously insured but is no longer in employed or self-employed work, in order to maintain their contribution record and protect benefit eligibility.", flag:false},
+    {n:139, q:"Who is eligible to make voluntary contributions?", a:"Generally, persons who have previously been registered contributors with a gap in their record. Confirm current eligibility criteria with ASSB.", flag:true},
+    {n:140, q:"What is the voluntary contribution rate?", a:"Confirm current voluntary contribution rate with ASSB.", flag:true},
+    {n:141, q:"How far back can voluntary contributions fill a gap?", a:"Confirm the maximum retroactive period for voluntary contributions with ASSB.", flag:true},
+    {n:142, q:"Do voluntary contributions count toward all benefit types?", a:"Confirm whether voluntary contributions count toward all benefits (including Old Age and Disability) or only certain ones.", flag:true},
+    {n:143, q:"How do I sign up to make voluntary contributions?", a:"Contact the ASSB office. Phone: 264 497 2201/2 · Email: info@ssbai.com.", flag:false},
+  ]},
+  { title:"Section 17 — Special Employment Situations", items:[
+    {n:144, q:"I work part-time. Am I covered by Social Security?", a:"Yes. Part-time workers are covered. Contributions are calculated on actual earnings, regardless of hours worked.", flag:false},
+    {n:145, q:"I am a domestic worker. Am I covered?", a:"Yes. Domestic workers employed in private homes are covered. Household employers must register and contribute at standard rates.", flag:false},
+    {n:146, q:"I am on a short-term or fixed-term contract. Am I covered?", a:"Yes. Employment type does not exempt an employer or employee from Social Security obligations.", flag:false},
+    {n:147, q:"I am a seasonal worker. Am I covered?", a:"Yes. Contributions are due for any period in which you receive insurable earnings, regardless of the seasonal nature of the work.", flag:false},
+    {n:148, q:"I work for two different employers at the same time. What happens?", a:"Each employer contributes on the wages they pay. Combined contributions cannot exceed the contribution ceiling.", flag:false},
+    {n:149, q:"I am a foreign national on a work permit. Must I contribute?", a:"Generally yes — legally employed foreign nationals are required to register and contribute at standard rates. Confirm any exemptions with ASSB.", flag:true},
+    {n:150, q:"I am a student working part-time. Must I pay Social Security?", a:"Contributions are due from age 15 for any employed person, regardless of student status.", flag:false},
+    {n:151, q:"My employer uses sub-contractors. Are they covered?", a:"Depends on whether sub-contractors are employees or genuinely self-employed. Confirm the employment status test with ASSB to avoid misclassification.", flag:true},
+    {n:152, q:"I employ family members in my business. Must I register and contribute for them?", a:"Yes. Family members who are employed and receive wages are employees for Social Security purposes.", flag:false},
+    {n:153, q:"I am a company director who receives a salary. Must I contribute?", a:"Generally yes. Confirm the treatment of director remuneration with ASSB.", flag:true},
+  ]},
+  { title:"Section 18 — Working Abroad & Returning", items:[
+    {n:154, q:"I am leaving Anguilla to work abroad. What happens to my contributions?", a:"Your ASSB contributions cease when you leave Anguilla. Your contribution record is preserved. Consider voluntary contributions to maintain benefit eligibility.", flag:false},
+    {n:155, q:"I worked abroad for many years and am now returning. Can I count my foreign contributions?", a:"Confirm whether Anguilla has bilateral or multilateral social security totalization agreements that allow foreign contribution periods to count.", flag:true},
+    {n:156, q:"I worked in the UK. Can I use my UK National Insurance record in Anguilla?", a:"Confirm with ASSB whether a reciprocal agreement with the UK exists.", flag:true},
+    {n:157, q:"I worked in the US and contributed to US Social Security. Can that count here?", a:"Confirm with ASSB whether an agreement with the US Social Security Administration applies to Anguilla.", flag:true},
+    {n:158, q:"I am about to retire in Anguilla after working abroad for most of my career. What are my options?", a:"Contact ASSB to review your Anguilla contribution record. If insufficient, consider the NCOAP (if a Belonger aged 68+) or voluntary contributions. Phone: 264 497 2201/2.", flag:false},
+    {n:159, q:"Can I get a refund of my contributions if I leave Anguilla permanently?", a:"Confirm with ASSB whether a refund of contributions is available to persons emigrating permanently.", flag:true},
+  ]},
+  { title:"Section 19 — Insurable Earnings Definitions", items:[
+    {n:160, q:"What is the difference between gross wages and insurable earnings?", a:"Gross wages are total remuneration before deductions. Insurable earnings are the portion on which Social Security contributions are calculated — subject to the ceiling and possible exclusions.", flag:true},
+    {n:161, q:"Is a signing bonus included in insurable earnings?", a:"Confirm with ASSB whether lump sum signing bonuses are included in the contribution calculation.", flag:true},
+    {n:162, q:"Is a severance payment subject to Social Security contributions?", a:"Confirm with ASSB whether severance or termination payments attract contributions.", flag:true},
+    {n:163, q:"Are tips and gratuities included in insurable earnings?", a:"Confirm with ASSB the treatment of tips and gratuities, particularly in the hospitality sector.", flag:true},
+    {n:164, q:"Is a housing allowance paid by my employer subject to contributions?", a:"Confirm with ASSB whether employer-paid housing allowances are included in insurable earnings.", flag:true},
+    {n:165, q:"Is a car allowance subject to Social Security contributions?", a:"Confirm with ASSB whether vehicle or travel allowances are included in insurable earnings.", flag:true},
+    {n:166, q:"Is commission income insurable?", a:"Generally yes. Confirm with ASSB how commission-only workers calculate their insurable earnings.", flag:true},
+  ]},
+  { title:"Section 20 — Benefit Interactions & Overpayments", items:[
+    {n:167, q:"Can I receive more than one ASSB benefit at the same time?", a:"Confirm with ASSB which benefit combinations are permitted concurrently.", flag:true},
+    {n:168, q:"I was overpaid a benefit by mistake. What happens?", a:"Overpaid benefits are recoverable by the ASSB. Notify ASSB immediately. Repayment arrangements are typically available. Knowingly retaining an overpayment may constitute fraud.", flag:false},
+    {n:169, q:"My circumstances changed while I was receiving a benefit. Who do I notify?", a:"Notify the ASSB immediately. Changes in employment, health, marital status, or income can affect benefit entitlement.", flag:false},
+    {n:170, q:"Can a benefit be suspended?", a:"Yes. Benefits may be suspended if the recipient works while receiving a disqualifying benefit, fails to attend a medical review, or does not respond to ASSB correspondence.", flag:true},
+  ]},
+  { title:"Section 21 — Appeals & Disputes", items:[
+    {n:171, q:"My claim was rejected. What are my options?", a:"Contact the ASSB office in writing to formally request a review. Provide all supporting documentation. The Social Security Act provides for an appeal mechanism.", flag:false},
+    {n:172, q:"How long do I have to appeal a decision?", a:"Confirm the exact appeal deadline (e.g. within 30 days of the decision) with ASSB.", flag:true},
+    {n:173, q:"Who hears Social Security appeals in Anguilla?", a:"Confirm whether appeals are heard internally by ASSB, by an independent tribunal, or by the courts.", flag:true},
+    {n:174, q:"Do I need a lawyer to appeal?", a:"You are not required to have a lawyer, but you may choose to seek legal advice, especially for complex or high-value matters.", flag:false},
+    {n:175, q:"What evidence should I include with an appeal?", a:"All documentation that supports your claim: medical certificates, payslips, employment records, correspondence, and any other relevant evidence.", flag:false},
+    {n:176, q:"What if I am not satisfied after the internal appeal?", a:"Confirm with ASSB whether there is a further escalation route (e.g. an independent tribunal or judicial review).", flag:true},
+  ]},
+  { title:"Section 22 — Online Portal & Digital Services", items:[
+    {n:177, q:"What can I do on the ASSB online portal?", a:"Submit contributions, view contribution statements, manage registrations, and access ASSB digital services anytime at secure.ssbai.com.", flag:false},
+    {n:178, q:"How do I create an online account?", a:"Create an account through the Government of Anguilla portal at services.gov.ai. Then access ASSB services via secure.ssbai.com.", flag:false},
+    {n:179, q:"I forgot my portal password. How do I reset it?", a:"Use the password reset function on the portal login page at secure.ssbai.com. Contact ASSB if you encounter issues.", flag:false},
+    {n:180, q:"Can employers submit bulk contribution schedules online?", a:"Yes. Download the Employer Contributions Template at ssbai.com/mbs/templates/Payroll_SSB_AI.xlsx and upload via the portal.", flag:false},
+    {n:181, q:"Is the portal secure?", a:"The portal is operated by the ASSB/Government of Anguilla using secure (HTTPS) connections.", flag:false},
+  ]},
+  { title:"Section 23 — Forms, Documents & Resources", items:[
+    {n:182, q:"Where can I download ASSB forms?", a:"At ssbai.com/resources.php?type=forms or collect in person at the ASSB office.", flag:false},
+    {n:183, q:"Where can I find ASSB booklets and guides?", a:"At ssbai.com/resources.php?type=booklets — plain-language guides on benefits and contributions.", flag:false},
+    {n:184, q:"Where can I find ASSB Annual Reports?", a:"At ssbai.com/annualreports.php.", flag:false},
+    {n:185, q:"Where can I find the ASSB Strategic Transformation Plan?", a:"At ssbai.com/documents/ASSB-STP2019-2021.pdf.", flag:false},
+  ]},
+  { title:"Section 24 — Contact & Office", items:[
+    {n:186, q:"Where is the ASSB office located?", a:"James Ronald Webster Building, P.O. Box 243, The Valley, AI-2640, Anguilla BWI.", flag:false},
+    {n:187, q:"What are the ASSB office hours?", a:"Monday to Friday, 8:00 AM – 4:00 PM. Closed on public holidays.", flag:false},
+    {n:188, q:"What are the ASSB phone numbers?", a:"Main: 264 497 2201/2 · DIGI: 264 462 2201 · USA: 718 734 4562.", flag:false},
+    {n:189, q:"What is the ASSB email address?", a:"info@ssbai.com.", flag:false},
+    {n:190, q:"Does the ASSB have social media?", a:"Facebook: facebook.com/ssbai1980 · Twitter/X: @ssb_ai · YouTube: ASSB channel.", flag:false},
+    {n:191, q:"Can I speak to someone at the ASSB via WhatsApp or live chat?", a:"Confirm with ASSB whether WhatsApp or live chat support is currently available.", flag:true},
+  ]},
+  { title:"Section 25 — Sensitive & Edge Cases", items:[
+    {n:192, q:"I have never been registered with Social Security despite working for years. What should I do?", a:"Register with the ASSB immediately. Confirm with ASSB whether backdated contributions can be paid for prior unregistered employment.", flag:true},
+    {n:193, q:"My employer told me I don't need to pay Social Security. Is that correct?", a:"No. Registration and contribution are compulsory by law. An employer cannot legally exempt an employee. If your employer is not deducting and remitting contributions, contact the ASSB Compliance team.", flag:false},
+    {n:194, q:"I am going through a divorce. Will my Social Security be affected?", a:"Confirm with ASSB and a legal adviser whether divorce proceedings affect benefit entitlements (particularly Survivors' Benefit eligibility of a separated spouse).", flag:true},
+    {n:195, q:"My employer has closed down and I cannot locate them. What do I do?", a:"Contact the ASSB office. If your employer was registered, the ASSB will have records. Phone: 264 497 2201/2.", flag:false},
+    {n:196, q:"I received a letter from the ASSB saying I owe money. What should I do?", a:"Do not ignore it. Contact the ASSB office immediately to understand the basis of the demand and discuss your options.", flag:false},
+    {n:197, q:"Someone is using my Social Security number fraudulently. What do I do?", a:"Report this to the ASSB office immediately and also to the Royal Anguilla Police Force. Phone ASSB: 264 497 2201/2.", flag:false},
+    {n:198, q:"I have a terminal illness and want to understand my entitlements.", a:"You may be entitled to Disability Benefit (if permanently incapable of work and under 65), and your family may be entitled to Survivors' Benefit and Funeral Grant upon your death. Contact ASSB for a personal review: 264 497 2201/2.", flag:false},
+    {n:199, q:"Can my Social Security benefits be seized if I owe a debt or tax?", a:"Confirm the legal protections on Social Security benefits from attachment or garnishment under Anguilla law.", flag:true},
+    {n:200, q:"I have never been able to work due to a disability. Is there anything for me?", a:"If you have no contribution history, standard contributory benefits will not be available. You may qualify for the NCOAP at age 68 if you are an Anguillian Belonger and pass the Means Test. Confirm with ASSB whether other non-contributory assistance programmes exist.", flag:true},
+  ]},
+  { title:"Section 26 — Miscellaneous", items:[
+    {n:201, q:"Does Anguilla Social Security contribute to a pension fund?", a:"The ASSB holds a Social Security Development Fund (SSDF). Contributions are pooled and managed collectively, not individually. See the Annual Reports at ssbai.com/annualreports.php for details.", flag:false},
+    {n:202, q:"Can I top up my Social Security pension with a private pension?", a:"Yes. The ASSB Old Age Benefit is a government safety net. You are free to also contribute to private pension or savings plans.", flag:false},
+    {n:203, q:"I want to give feedback about the ASSB. How?", a:"Contact the ASSB at info@ssbai.com or via www.ssbai.com. The ASSB welcomes feedback to improve services.", flag:false},
+    {n:204, q:"Can I use this chatbot to make an official claim or register?", a:"No. The virtual assistant provides general information only. All official registrations and claims must be submitted through the ASSB office or the official portal at secure.ssbai.com.", flag:false},
+    {n:205, q:"How current is the information in this chatbot?", a:"The knowledge base is based on information published on ssbai.com. Always confirm current rates and rules with the ASSB office for official purposes.", flag:false},
+    {n:206, q:"I have a question not covered here. What should I do?", a:"Contact the ASSB directly. Phone: 264 497 2201/2 · DIGI: 264 462 2201 · USA: 718 734 4562 · Email: info@ssbai.com · Web: www.ssbai.com.", flag:false},
+    {n:207, q:"Does the ASSB offer employer training or workshops?", a:"Confirm with ASSB whether outreach, training sessions, or employer workshops are available.", flag:true},
+    {n:208, q:"I am a journalist researching Anguilla Social Security. Who should I speak to?", a:"Contact the ASSB office directly. Email: info@ssbai.com or phone 264 497 2201/2.", flag:false},
+  ]}
+];
+
+/* ── Notes storage ── */
+const NOTES = {};
+const STATUS = {};
+let currentFilter = 'all';
+
+/* ── Build DOM ── */
+function build() {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  SECTIONS.forEach(sec => {
+    const sh = document.createElement('div');
+    sh.className = 'section-header';
+    sh.innerHTML = `📂 ${sec.title} <span>(${sec.items.length} questions)</span>`;
+    main.appendChild(sh);
+    sec.items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = `qa-card${item.flag ? ' flagged' : ''}`;
+      card.dataset.q = item.q.toLowerCase();
+      card.dataset.a = item.a.toLowerCase();
+      card.dataset.id = item.n;
+      card.dataset.flag = item.flag ? '1' : '0';
+
+      const status = STATUS[item.n] || 'none';
+      if (status === 'approved') card.classList.add('approved');
+      if (status === 'flagged') card.classList.add('flagged');
+
+      const warnBadge = item.flag ? '<span class="warn-badge">⚠️ NEEDS CONFIRMATION</span>' : '';
+      const okBadge = status === 'approved' ? '<span class="ok-badge">✅ APPROVED</span>' : '';
+
+      card.innerHTML = `
+        <div class="qa-q" onclick="toggle(this.parentElement)">
+          <span class="qa-num">Q${item.n}</span>
+          <span class="qa-q-text">${item.q}${warnBadge}${okBadge}</span>
+          <span class="qa-toggle">▾</span>
+        </div>
+        <div class="qa-a">
+          <p>${item.a}</p>
+          <div class="qa-actions">
+            <label>Team Review:</label>
+            <button class="action-btn btn-approve" onclick="setStatus(${item.n},'approved',this.closest('.qa-card'))">✅ Approve</button>
+            <button class="action-btn btn-flag" onclick="setStatus(${item.n},'flagged',this.closest('.qa-card'))">⚠️ Flag for Edit</button>
+            <input class="note-input" placeholder="Add team note here…" 
+              value="${NOTES[item.n]||''}"
+              oninput="NOTES[${item.n}]=this.value" />
+          </div>
+        </div>`;
+      main.appendChild(card);
+    });
+  });
+  updateCount();
+}
+
+function toggle(card) {
+  card.classList.toggle('open');
+}
+
+function setStatus(id, st, card) {
+  STATUS[id] = st;
+  card.classList.remove('approved','flagged');
+  if (st === 'approved') card.classList.add('approved');
+  if (st === 'flagged') card.classList.add('flagged');
+  // update badges
+  const qText = card.querySelector('.qa-q-text');
+  qText.querySelectorAll('.ok-badge').forEach(e=>e.remove());
+  if (st === 'approved') {
+    const b = document.createElement('span');
+    b.className = 'ok-badge'; b.textContent = '✅ APPROVED';
+    qText.appendChild(b);
+  }
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterAll();
+}
+
+function filterAll() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let shown = 0;
+  document.querySelectorAll('.qa-card').forEach(card => {
+    const matchSearch = !q || card.dataset.q.includes(q) || card.dataset.a.includes(q);
+    let matchFilter = true;
+    if (currentFilter === 'flagged') matchFilter = card.dataset.flag === '1' || STATUS[card.dataset.id] === 'flagged';
+    if (currentFilter === 'approved') matchFilter = STATUS[card.dataset.id] === 'approved';
+    if (currentFilter === 'edited') matchFilter = !!(NOTES[card.dataset.id]||'').trim();
+    card.classList.toggle('hidden', !(matchSearch && matchFilter));
+    if (matchSearch && matchFilter) shown++;
+  });
+  document.getElementById('count').textContent = shown;
+}
+
+function updateCount() {
+  const all = document.querySelectorAll('.qa-card').length;
+  document.getElementById('count').textContent = all;
+}
+
+build();
+</script>
+</body>
+</html>

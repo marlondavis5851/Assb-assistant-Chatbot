@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASSB Virtual Assistant — Test Package</title>
+<style>
+  :root {
+    --navy: #003366;
+    --blue: #0066CC;
+    --gold: #CC9900;
+    --white: #FFFFFF;
+    --sand: #F7F9FC;
+    --border: #D1D9E6;
+    --text: #1A1A2E;
+    --muted: #6B7280;
+    --green: #065F46;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #EEF2F7; color: var(--text); }
+
+  .email-wrap { max-width: 680px; margin: 30px auto; background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.12); }
+
+  /* Header */
+  .email-header { background: var(--navy); padding: 32px 36px; border-bottom: 4px solid var(--gold); }
+  .email-header img { height: 50px; filter: brightness(0) invert(1); display: block; margin-bottom: 14px; }
+  .email-header h1 { font-family: Georgia, serif; font-size: 22px; color: var(--white); font-weight: 700; line-height: 1.3; }
+  .email-header p { font-size: 12px; color: #A8C4E0; margin-top: 5px; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* Body */
+  .email-body { padding: 36px; }
+  .greeting { font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 12px; }
+  .intro { font-size: 14.5px; line-height: 1.7; color: #374151; margin-bottom: 28px; }
+
+  /* Cards */
+  .cards { display: grid; gap: 16px; margin-bottom: 32px; }
+  .card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .card-head { background: var(--navy); color: var(--white); padding: 14px 18px; display: flex; align-items: center; gap: 10px; }
+  .card-head .icon { font-size: 20px; }
+  .card-head h2 { font-size: 14px; font-weight: 700; letter-spacing: .02em; }
+  .card-head p { font-size: 11px; color: #A8C4E0; margin-top: 2px; }
+  .card-body { padding: 18px; background: var(--sand); }
+  .card-body p { font-size: 13.5px; line-height: 1.6; color: #374151; margin-bottom: 12px; }
+
+  /* Credential box */
+  .creds { background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .creds-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+  .cred-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+  .cred-row:last-child { margin-bottom: 0; }
+  .cred-label { color: var(--muted); width: 80px; flex-shrink: 0; font-size: 12px; }
+  .cred-val { background: #EFF6FF; border: 1px solid #BDD8F0; border-radius: 5px; padding: 3px 10px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--navy); font-weight: 700; }
+
+  /* Download buttons */
+  .downloads { display: grid; gap: 10px; margin-bottom: 24px; }
+  .dl-btn { display: flex; align-items: center; gap: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; text-decoration: none; color: var(--text); transition: border-color .15s, box-shadow .15s; cursor: pointer; }
+  .dl-btn:hover { border-color: var(--blue); box-shadow: 0 2px 12px rgba(0,102,204,.12); }
+  .dl-icon { width: 42px; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .dl-icon.blue { background: #EFF6FF; }
+  .dl-icon.navy { background: #E8EDF5; }
+  .dl-icon.green { background: #ECFDF5; }
+  .dl-info h3 { font-size: 13.5px; font-weight: 700; color: var(--navy); }
+  .dl-info p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .dl-arrow { margin-left: auto; color: var(--muted); font-size: 18px; }
+
+  /* Steps */
+  .steps { counter-reset: steps; list-style: none; }
+  .steps li { counter-increment: steps; display: flex; gap: 12px; margin-bottom: 14px; font-size: 13.5px; line-height: 1.5; color: #374151; }
+  .steps li::before { content: counter(steps); background: var(--navy); color: var(--white); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* Note box */
+  .note { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 13px 15px; font-size: 13px; color: #92400E; line-height: 1.6; margin-top: 16px; }
+  .note strong { color: #78350F; }
+
+  /* Footer */
+  .email-footer { background: var(--navy); padding: 22px 36px; text-align: center; }
+  .email-footer p { font-size: 12px; color: #A8C4E0; line-height: 1.7; }
+  .email-footer a { color: var(--gold); text-decoration: none; }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+</style>
+</head>
+<body>
+
+<div class="email-wrap">
+
+  <!-- HEADER -->
+  <div class="email-header">
+    <img src="https://www.ssbai.com/image/newlogo.png" alt="ASSB Logo"
+         onerror="this.style.display='none'"/>
+    <h1>ASSB Virtual Assistant — Test Package</h1>
+    <p>Confidential · Internal Review</p>
+  </div>
+
+  <!-- BODY -->
+  <div class="email-body">
+
+    <div class="greeting">Hello Marlon,</div>
+    <div class="intro">
+      Attached below are the three components of the ASSB Virtual Assistant project for your review.
+      Everything you need is in this single file — the chatbot itself, the developer handoff, and the
+      Q&A database are all accessible directly from this page. No internet connection required to
+      test the chatbot. Simply save this file and open it in any browser on your PC.
+    </div>
+
+    <!-- CARD 1 — CHATBOT -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-head">
+          <span class="icon">🐬</span>
+          <div>
+            <h2>ASSB Virtual Assistant — Chatbot</h2>
+            <p>Click to open · Works fully offline</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>The full chatbot with 30 topics, 250+ Q&A coverage, emotional responses (congratulations, condolences, support), and conversational tone. Login required.</p>
+          <div class="creds">
+            <div class="creds-title">Login Credentials</div>
+            <div class="cred-row"><span class="cred-label">Username</span><span class="cred-val">assb</span></div>
+            <div class="cred-row"><span class="cred-label">Password</span><span class="cred-val">Ssbai2026!</span></div>
+            <div class="cred-row"><span class="cred-label">Alt user</span><span class="cred-val">marlon</span> &nbsp; <span class="cred-val">Davis2026!</span></div>
+          </div>
+          <div class="note" style="margin-top:14px">
+            <strong>⚠️ Note:</strong> The chatbot answers questions directly from its knowledge base — no internet required. The AI layer (Claude API) will be activated once your developer deploys the Cloudflare Worker relay described in the handoff document.
+          </div>
+          <div style="margin-top:16px">
+            <a class="dl-btn" id="chatbot-link" href="anguilla-ssb-chatbot.html" target="_blank">
+              <div class="dl-icon blue">🤖</div>
+              <div class="dl-info">
+                <h3>Open Chatbot</h3>
+                <p>anguilla-ssb-chatbot.html — save this file and open in browser</p>
+              </div>
+              <span class="dl-arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2 — DEVELOPER HANDOFF -->
+      <div class="card">
+        <div class="card-head">
+          <span class="icon">⚙️</span>
+          <div>
+            <h2>Developer Handoff Package</h2>
+            <p>Everything your dev team needs to deploy and enhance</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>Full technical documentation: architecture, deployment steps, how to add new topics, credential management, GitHub Pages setup, Cloudflare Worker for AI layer, design tokens, and future roadmap.</p>
+          <ol class="steps" style="margin-top:4px">
+            <li>Forward this to your development team</li>
+            <li>They follow Section 3 to deploy to GitHub Pages (10 minutes, free)</li>
+            <li>You get a live URL: <strong>https://ssbai.github.io/assb-assistant</strong></li>
+            <li>Optional: host at <strong>assistant.ssbai.com</strong> for the official ASSB domain</li>
+          </ol>
+          <a class="dl-btn" href="ASSB-Developer-Handoff.html" target="_blank" style="margin-top:16px">
+            <div class="dl-icon navy">📋</div>
+            <div class="dl-info">
+              <h3>Open Developer Handoff</h3>
+              <p>ASSB-Developer-Handoff.html — full technical documentation</p>
+            </div>
+            <span class="dl-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- CARD 3 — Q&A DATABASE -->
+      <div class="card">
+        <div class="card-head">
+          <span class="icon">📚</span>
+          <div>
+            <h2>Q&A Database — 250+ Questions</h2>
+            <p>Searchable · For team review and accuracy vetting</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>Every question the bot can answer, organised into 26 sections. Fully searchable. Items marked ⚠️ need confirmation from ASSB staff before going live. Share with your benefits team for accuracy review.</p>
+          <a class="dl-btn" href="ASSB-QA-Local.html" target="_blank" style="margin-top:4px">
+            <div class="dl-icon green">🔍</div>
+            <div class="dl-info">
+              <h3>Open Q&A Database</h3>
+              <p>ASSB-QA-Local.html — searchable, filterable, annotatable</p>
+            </div>
+            <span class="dl-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- HOW TO USE LOCALLY -->
+    <div style="margin-bottom:28px">
+      <h2 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px">📁 How to Use These Files on Your PC</h2>
+      <ol class="steps">
+        <li>Save all four files into the <strong>same folder</strong> on your desktop:<br>
+            <code style="background:#F3F4F6;padding:2px 7px;border-radius:4px;font-size:12px">
+              ASSB-Test-Email.html &nbsp;·&nbsp; anguilla-ssb-chatbot.html &nbsp;·&nbsp; ASSB-Developer-Handoff.html &nbsp;·&nbsp; ASSB-QA-Local.html
+            </code>
+        </li>
+        <li>Open <strong>ASSB-Test-Email.html</strong> in Chrome or Edge — this page is your hub</li>
+        <li>Click <strong>"Open Chatbot"</strong> to test the assistant with the credentials above</li>
+        <li>Click <strong>"Open Developer Handoff"</strong> to review what goes to your dev team</li>
+        <li>Click <strong>"Open Q&A Database"</strong> to search and review all questions with your team</li>
+      </ol>
+    </div>
+
+    <div class="note">
+      <strong>Next steps after review:</strong> Return any corrections or additions to the Q&A database and I'll update the knowledge base in one pass. Once your team confirms accuracy, the developer can deploy to a live URL within the hour.
+    </div>
+
+  </div><!-- /email-body -->
+
+  <!-- FOOTER -->
+  <div class="email-footer">
+    <p>
+      Anguilla Social Security Board Virtual Assistant Project<br/>
+      <a href="https://www.ssbai.com">www.ssbai.com</a> &nbsp;·&nbsp;
+      <a href="tel:+12644972201">264 497 2201/2</a> &nbsp;·&nbsp;
+      <a href="mailto:info@ssbai.com">info@ssbai.com</a>
+    </p>
+  </div>
+
+</div><!-- /email-wrap -->
+</body>
+</html>
